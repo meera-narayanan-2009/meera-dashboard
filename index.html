@@ -1,0 +1,3871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meera's Study Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--border:#2a2d3a;--text:#e4e4e7;--muted:#9ca3af;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;--pink:#ec4899;--cyan:#06b6d4;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:0;}
+
+/* ═══ TOP NAV (persistent) ═══ */
+.top-nav{display:flex;align-items:center;gap:4px;background:#14161e;border-bottom:2px solid var(--border);padding:0 16px;position:sticky;top:0;z-index:200;}
+.top-nav .brand{font-size:14px;font-weight:700;color:var(--text);padding:14px 12px 14px 4px;margin-right:8px;border-right:1px solid var(--border);}
+.top-nav .brand span{color:var(--muted);font-weight:500;}
+.nav-btn{padding:14px 18px;font-size:13px;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;position:relative;transition:color .2s;}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--text);}
+.nav-btn.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--blue);}
+.nav-btn .new-badge{display:inline-block;margin-left:6px;background:var(--green);color:#0f1117;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;vertical-align:middle;}
+.nav-spacer{flex:1;}
+.nav-meta{font-size:12px;color:var(--muted);padding:0 8px;}
+
+/* ═══ VIEWS ═══ */
+.view{display:none;padding:24px;}
+.view.active{display:block;}
+
+/* ═══ SHARED ═══ */
+.grid{display:grid;gap:20px;margin-bottom:24px;}.grid-4{grid-template-columns:repeat(4,1fr);}.grid-3{grid-template-columns:repeat(3,1fr);}.grid-2{grid-template-columns:repeat(2,1fr);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.card h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:600;}
+.big-num{font-size:36px;font-weight:700;line-height:1.1;}
+.tag{display:inline-block;padding:4px 11px;border-radius:20px;font-size:14px;font-weight:700;}
+.tag-astar{background:#a855f722;color:#a855f7;}.tag-a{background:#22c55e22;color:#22c55e;}.tag-b{background:#3b82f622;color:#3b82f6;}.tag-c{background:#f59e0b22;color:#f59e0b;}.tag-d{background:#ef444422;color:#ef4444;}.tag-e{background:#ef444422;color:#ef4444;}.tag-u{background:#6b728022;color:#9ca3af;}
+.section-title{font-size:18px;font-weight:700;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.chart-container{position:relative;height:280px;}
+.bar-bg{background:#2a2d3a;height:8px;border-radius:4px;width:100%;min-width:80px;}.bar-fill{height:8px;border-radius:4px;transition:width .5s;}
+table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}td{padding:10px 12px;border-bottom:1px solid var(--border);}tr:hover{background:#ffffff06;}
+.flag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}.flag-warn{background:#ef444422;color:#ef4444;}.flag-good{background:#22c55e22;color:#22c55e;}
+.badge{padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;}.badge-psych{background:#a855f722;color:#a855f7;}.badge-biz{background:#3b82f622;color:#3b82f6;}.badge-it{background:#06b6d422;color:#06b6d4;}
+.badge-level-as{background:#06b6d422;color:#06b6d4;border:1px solid #06b6d444;}
+.badge-level-a{background:#a855f722;color:#a855f7;border:1px solid #a855f744;}
+.badge-level-both{background:linear-gradient(90deg,#06b6d422,#a855f722);color:#e4e4e7;border:1px solid #a855f766;}
+.insight-box{background:linear-gradient(135deg,#1a1d2780,#2a2d3a40);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.insight-box h3{font-size:15px;margin-bottom:10px;}.insight-box ul{list-style:none;padding:0;}.insight-box li{padding:6px 0;font-size:14px;position:relative;padding-left:20px;}.insight-box li::before{content:'';position:absolute;left:0;top:12px;width:8px;height:8px;border-radius:50%;}
+.li-g::before{background:var(--green);}.li-r::before{background:var(--red);}.li-a::before{background:var(--amber);}
+
+/* ═══ LANDING PAGE ═══ */
+.hero{text-align:center;padding:32px 16px 24px;}
+.hero h1{font-size:34px;font-weight:800;margin-bottom:8px;background:linear-gradient(90deg,#3b82f6,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--muted);font-size:15px;}
+/* Level sections + subject cards on Home */
+.level-section{max-width:1100px;margin:0 auto 28px;}
+.level-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.level-section-actions{display:flex;gap:6px;}
+.lvl-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 12px;border-radius:12px;}
+.lvl-tag.as-tag{background:#06b6d422;color:#06b6d4;}
+.lvl-tag.a-tag{background:#a855f722;color:#a855f7;}
+.subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.subj-card{background:linear-gradient(135deg,var(--card),#161922);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;border-left-width:3px;}
+.subj-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px #00000045;}
+.subj-card .sc-title{font-size:14px;font-weight:700;margin-bottom:12px;}
+.subj-card .sc-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-top:1px solid var(--border);}
+.subj-card .sc-row:first-of-type{border-top:none;}
+.subj-card .sc-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.subj-card .sc-value{font-size:18px;font-weight:700;}
+.subj-card .sc-sub{font-size:11px;color:var(--muted);margin-left:6px;font-weight:500;}
+.subj-card-empty{opacity:.55;}
+.subj-card-empty .sc-value{color:var(--muted);font-size:13px;font-weight:500;}.sc-delta{display:inline-block;font-size:10px;font-weight:700;padding:2px 5px;border-radius:5px;margin-left:6px;vertical-align:middle;}.sc-delta.up{color:#22c55e;background:#22c55e18;}.sc-delta.dn{color:#ef4444;background:#ef444418;}.sc-delta.flat{color:#6b7280;background:#6b728018;}
+
+/* ═══ RECENT LIST ═══ */
+.recent-list{display:flex;flex-direction:column;gap:8px;}
+.recent-row{display:grid;grid-template-columns:140px 72px 1fr 70px 70px 60px;gap:12px;align-items:center;padding:12px 14px;background:#14161e;border:1px solid var(--border);border-radius:10px;transition:border-color .15s;}
+.recent-row:hover{border-color:#3b82f655;}
+.recent-row.new{border-color:#22c55e88;background:linear-gradient(90deg,#22c55e0a,#14161e 30%);}
+.recent-row .r-date{font-size:12px;color:var(--muted);font-weight:500;line-height:1.35;}
+.recent-row .r-date .r-date-main{color:var(--text);font-weight:600;}
+.recent-row .r-date .r-date-sub{font-size:10px;color:var(--muted);font-weight:500;margin-top:2px;}
+.recent-row .r-date .r-date-sub .r-lbl{opacity:.65;}
+.recent-row .r-name{font-size:13px;font-weight:500;}
+.recent-row .r-pct{font-size:14px;font-weight:700;text-align:right;}
+.recent-row .r-marks{font-size:12px;color:var(--muted);text-align:right;}
+.new-pill{display:inline-block;margin-left:6px;background:var(--green);color:#0f1117;font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px;letter-spacing:.5px;}
+.recent-empty{text-align:center;color:var(--muted);padding:24px;}
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar button{padding:6px 14px;background:#1a1d27;color:var(--muted);border:1px solid var(--border);border-radius:18px;cursor:pointer;font-size:12px;font-weight:600;}
+.filter-bar button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* ═══ FILE REF (folder + marked file under each assessment) ═══ */
+.file-ref{display:flex;align-items:baseline;gap:6px;font-size:11px;line-height:1.4;margin-top:3px;}
+.file-ref .ref-label{flex:0 0 auto;color:var(--muted);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;min-width:38px;}
+.file-ref .ref-val{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:11px;color:#c9c9d4;background:#0f1117;border:1px solid var(--border);padding:1px 6px;border-radius:4px;word-break:break-all;user-select:all;cursor:text;}
+.file-ref .ref-val.ref-link{color:#7dd3fc;text-decoration:none;cursor:pointer;user-select:auto;border-color:#3b82f655;transition:border-color .15s,color .15s,background .15s;display:inline-flex;align-items:center;gap:4px;}
+.file-ref .ref-val.ref-link:hover{color:#bae6fd;border-color:#3b82f6;background:#1a1d27;}
+.file-ref .ref-arrow{font-size:10px;opacity:.7;}
+.file-refs{margin-top:6px;}
+
+/* ═══ TAB 2: PROFICIENCY ═══ */
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:4px;}
+.ch-box{border-radius:8px;padding:10px 8px;text-align:center;font-size:12px;line-height:1.3;min-height:56px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--border);transition:opacity .3s;}
+.ch-box .ch-score{font-size:18px;font-weight:700;margin-bottom:2px;}
+.ch-box .ch-name{font-size:11px;line-height:1.2;}
+.ch-box .ch-occ{font-size:9px;font-weight:600;color:var(--muted);margin-top:4px;letter-spacing:.3px;cursor:help;}
+.ch-box-blank{background:var(--card);opacity:0.35;}
+.ch-box-blank .ch-name{color:var(--muted);}
+.subj-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.subj-hdr-left{flex:1;}
+.subj-title{font-size:16px;font-weight:700;}
+.subj-meta{font-size:13px;color:var(--muted);margin-top:2px;}
+.subj-pct{font-size:28px;font-weight:700;}
+.footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 16px;}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}.subject-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){.recent-row{grid-template-columns:1fr 1fr;grid-template-areas:"date level" "name name" "pct marks";gap:6px;}.recent-row .r-date{grid-area:date}.recent-row .r-level{grid-area:level;justify-self:end}.recent-row .r-name{grid-area:name}.recent-row .r-pct{grid-area:pct;text-align:left}.recent-row .r-marks{grid-area:marks;text-align:right}.recent-row .r-grade{display:none}}
+@media(max-width:600px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}.nav-btn{padding:10px 12px;font-size:12px;}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- DATA BLOCK                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script type="application/json" id="dashboard-data">
+{
+  "meta": {
+    "lastUpdated": "2026-05-26",
+    "dateRange": "April 1 – 26, 2026"
+  },
+  "subjects": {
+    "psychology": {
+      "code": "9990",
+      "shortName": "Psychology",
+      "scope": "AS & A Level",
+      "color": "purple",
+      "badgeClass": "badge-psych"
+    },
+    "business": {
+      "code": "9609",
+      "shortName": "Business",
+      "scope": "AS & A Level",
+      "color": "blue",
+      "badgeClass": "badge-biz"
+    },
+    "it": {
+      "code": "9626",
+      "shortName": "IT",
+      "scope": "AS & A Level",
+      "color": "cyan",
+      "badgeClass": "badge-it"
+    }
+  },
+  "assessments": [
+    {
+      "date": "2026-05-26",
+      "subject": "business",
+      "name": "9609_m23_qp_12",
+      "type": "Exam",
+      "earned": 39,
+      "total": 40,
+      "percentage": 97.5,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-05-25",
+      "dateEvaluated": "2026-05-26",
+      "markedFile": "9609_m23_qp_12-Marked.docx",
+      "folder": "2026-05-26-9609_m23_qp_12"
+    },
+    {
+      "date": "2026-05-26",
+      "subject": "business",
+      "name": "9609_w24_qp_12",
+      "type": "Exam",
+      "earned": 34,
+      "total": 40,
+      "percentage": 85.0,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-05-24",
+      "dateEvaluated": "2026-05-26",
+      "markedFile": "9609_w24_qp_12-Marked.docx",
+      "folder": "2026-05-26-9609_w24_qp_12"
+    },
+    {
+      "date": "2026-05-26",
+      "subject": "business",
+      "name": "9609_w24_qp_22",
+      "type": "Exam",
+      "earned": 58,
+      "total": 60,
+      "percentage": 96.7,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-05-25",
+      "dateEvaluated": "2026-05-26",
+      "markedFile": "9609_w24_qp_22-Marked.docx",
+      "folder": "2026-05-26-9609_w24_qp_22"
+    },
+    {
+      "date": "2026-05-26",
+      "subject": "it",
+      "name": "9626_w25_qp_12",
+      "type": "Exam",
+      "earned": 49,
+      "total": 70,
+      "percentage": 70.0,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-05-25",
+      "dateEvaluated": "2026-05-26",
+      "markedFile": "9626_w25_qp_12-Marked.docx",
+      "folder": "2026-05-26-9626_w25_qp_12"
+    },
+    {
+      "date": "2026-05-24",
+      "subject": "business",
+      "name": "9609_s25_qp_13",
+      "type": "Exam",
+      "earned": 38,
+      "total": 40,
+      "percentage": 95.0,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-05-23",
+      "dateEvaluated": "2026-05-24",
+      "topicsCovered": [
+        "2.2 Motivation > 2.2.1 Motivation as a tool of management and leadership",
+        "2.2 Motivation > 2.2.3 Motivation theories",
+        "2.2 Motivation > 2.2.4 Motivation methods in practice: financial motivators, non-financial motivators",
+        "3.1 The nature of marketing > 3.1.1 The role of marketing and its relationship with other business activities",
+        "3.1 The nature of marketing > 3.1.5 Mass marketing and niche marketing",
+        "4.2 Inventory management > 4.2.2 Just in Time (JIT)",
+        "5.4 Costs > 5.4.4 Break-even analysis",
+        "5.5 Budgets > 5.5.1 The meaning and purpose of budgets",
+        "5.5 Budgets > 5.5.2 Variances"
+      ],
+      "markedFile": "9609_s25_qp_13-Marked.docx",
+      "folder": "2026-05-24-9609_s25_qp_13"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "business",
+      "name": "9609_s25_qp_12",
+      "type": "Exam",
+      "earned": 29,
+      "total": 40,
+      "percentage": 72.5,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-05-23",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "2.1 Human resource management (HRM) > 2.1.4 Redundancy and dismissal",
+        "2.1 Human resource management (HRM) > 2.1.6 Training and development",
+        "2.3 Management > 2.3.1 Management and managers",
+        "UNMATCHED"
+      ],
+      "markedFile": "9609_s25_qp_12-Marked.docx",
+      "folder": "2026-05-23-9609_s25_qp_12"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "business",
+      "name": "9609_s25_qp_22",
+      "type": "Exam",
+      "earned": 57,
+      "total": 60,
+      "percentage": 95.0,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-05-23",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "2.3 Management > 2.3.1 Management and managers",
+        "5.4 Costs > 5.4.4 Break-even analysis"
+      ],
+      "markedFile": "9609_s25_qp_22-Marked.docx",
+      "folder": "2026-05-23-9609_s25_qp_22"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "business",
+      "name": "9609_w25_qp_22",
+      "type": "Exam",
+      "earned": 55,
+      "total": 60,
+      "percentage": 91.7,
+      "grade": "A*",
+      "flags": [],
+      "dateAnswered": "2026-05-23",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "1.4 Business objectives > 1.4.1 Business objectives in the private sector and public sector",
+        "UNMATCHED"
+      ],
+      "markedFile": "9609_w25_qp_22-Marked.docx",
+      "folder": "2026-05-23-9609_w25_qp_22"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "business",
+      "name": "Business P1 Cambridge w25 qp11",
+      "type": "Exam",
+      "earned": 30,
+      "total": 40,
+      "percentage": 75.0,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-05-22",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "1.2 Business structure > 1.2.1 Economic sectors",
+        "1.1 Enterprise > 1.1.3 Business plans",
+        "5.2 Sources of finance > 5.2.2 Internal and external sources of finance",
+        "4.1 The nature of operations > 4.1.2 Efficiency, effectiveness, productivity and sustainability",
+        "2.1 Human resource management (HRM) > 2.1.5 Morale and welfare",
+        "3.3 The marketing mix > 3.3.3 Product portfolio analysis",
+        "3.3 The marketing mix > 3.3.5 Promotion methods"
+      ],
+      "markedFile": "9609_w25_qp_11-Marked.docx",
+      "folder": "2026-05-23-Business P1 Cambridge w25 qp11"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "business",
+      "name": "Business P2 Cambridge w25 qp21",
+      "type": "Exam",
+      "earned": 52,
+      "total": 60,
+      "percentage": 86.7,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-05-22",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "1.2 Business structure > 1.2.2 Business ownership",
+        "6.1 External influences on business activity > 6.1.5 Competitors and suppliers",
+        "5.3 Forecasting and managing cash flows > 5.3.1 Cash flow forecasts",
+        "5.4 Costs > 5.4.3 Uses of cost information",
+        "2.1 Human resource management (HRM) > 2.1.6 Training and development",
+        "3.1 The nature of marketing > 3.1.6 Market segmentation",
+        "1.5 Stakeholders in a business > 1.5.1 Business stakeholders",
+        "3.3 The marketing mix > 3.3.6 Place (channels of distribution)",
+        "5.4 Costs > 5.4.4 Break-even analysis",
+        "1.3 Size of business > 1.3.2 Significance of small businesses",
+        "4.3 Capacity utilisation and outsourcing > 4.3.2 Outsourcing"
+      ],
+      "markedFile": "9609_w25_qp_21-Marked.docx",
+      "folder": "2026-05-23-Business P2 Cambridge w25 qp21"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "business",
+      "name": "Business P3 Social Demographic CSR",
+      "type": "Exam",
+      "earned": 19,
+      "total": 20,
+      "percentage": 95.0,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-05-17",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.3 Social and demographic"
+      ],
+      "markedFile": "6.1.3 Social and demographic - Paper 3 - QP - 25 April 2026-Marked.docx",
+      "folder": "2026-05-23-Business P3 Social Demographic CSR"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "it",
+      "name": "IT P3 Impact of IT 4 May",
+      "type": "Exam",
+      "earned": 21,
+      "total": 24,
+      "percentage": 87.5,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-05-04",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "12 IT in society > 12.4 The impact of IT"
+      ],
+      "markedFile": "12.4 The Impact of IT - Paper 3 - QP - 4 May 2026-Marked.docx",
+      "folder": "2026-05-23-IT P3 Impact of IT 4 May"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "it",
+      "name": "IT P3 Impact of IT 6 May",
+      "type": "Exam",
+      "earned": 22,
+      "total": 24,
+      "percentage": 91.7,
+      "grade": "A*",
+      "flags": [],
+      "dateAnswered": "2026-05-06",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "12 IT in society > 12.4 The impact of IT"
+      ],
+      "markedFile": "12.4 The Impact of IT - Paper 3 - QP - 6 May 2026-Marked.docx",
+      "folder": "2026-05-23-IT P3 Impact of IT 6 May"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "9990_w25_qp_13",
+      "type": "Exam",
+      "earned": 39,
+      "total": 60,
+      "percentage": 65.0,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-05-23",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "2 Biological approach > 2.2 Hassett et al. (monkey toy preferences)",
+        "2 Biological approach > 2.3 Hölzel et al. (mindfulness and brain scans)",
+        "3 Cognitive approach > 3.1 Andrade (doodling)",
+        "3 Cognitive approach > 3.2 Baron-Cohen et al. (eyes test)",
+        "3 Cognitive approach > 3.3 Pozzulo et al. (line-ups)",
+        "4 Learning approach > 4.1 Bandura et al. (aggression)",
+        "4 Learning approach > 4.2 Fagen et al. (elephant learning)",
+        "4 Learning approach > 4.3 Saavedra and Silverman (button phobia)",
+        "5 Social approach > 5.2 Perry et al. (personal space)",
+        "5 Social approach > 5.3 Piliavin et al. (subway Samaritans)"
+      ],
+      "markedFile": "9990_w25_qp_13-Marked.docx",
+      "folder": "2026-05-23-9990_w25_qp_13"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "Psych P1 Approaches Issues and Debates-2",
+      "type": "Exam",
+      "earned": 39,
+      "total": 60,
+      "percentage": 65,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-05-22",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "5 Social approach > 5.2 Perry et al. (personal space)",
+        "3 Cognitive approach > 3.3 Pozzulo et al. (line-ups)",
+        "5 Social approach > 5.1 Milgram (obedience)",
+        "2 Biological approach > 2.2 Hassett et al. (monkey toy preferences)",
+        "4 Learning approach > 4.1 Bandura et al. (aggression)",
+        "4 Learning approach > 4.3 Saavedra and Silverman (button phobia)",
+        "4 Learning approach > 4.2 Fagen et al. (elephant learning)",
+        "2 Biological approach > 2.3 Hölzel et al. (mindfulness and brain scans)",
+        "5 Social approach > 5.3 Piliavin et al. (subway Samaritans)",
+        "3 Cognitive approach > 3.2 Baron-Cohen et al. (eyes test)"
+      ],
+      "markedFile": "9990_s25_qp_12-Marked.docx",
+      "folder": "2026-05-23-Psych P1 Approaches Issues and Debates-2"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "Psych P1 Approaches Issues and Debates",
+      "type": "Exam",
+      "earned": 35,
+      "total": 60,
+      "percentage": 58,
+      "grade": "D",
+      "flags": [],
+      "dateAnswered": "2026-05-22",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "2 Biological approach > 2.2 Hassett et al. (monkey toy preferences)",
+        "5 Social approach > 5.1 Milgram (obedience)",
+        "4 Learning approach > 4.2 Fagen et al. (elephant learning)",
+        "5 Social approach > 5.2 Perry et al. (personal space)",
+        "3 Cognitive approach > 3.2 Baron-Cohen et al. (eyes test)",
+        "3 Cognitive approach > 3.3 Pozzulo et al. (line-ups)",
+        "5 Social approach > 5.3 Piliavin et al. (subway Samaritans)",
+        "2 Biological approach > 2.3 Hölzel et al. (mindfulness and brain scans)",
+        "2 Biological approach > 2.1 Dement and Kleitman (sleep and dreams)",
+        "4 Learning approach > 4.1 Bandura et al. (aggression)"
+      ],
+      "markedFile": "9990_w25_qp_11-Marked.docx",
+      "folder": "2026-05-23-Psych P1 Approaches Issues and Debates"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "Psych P2 Research Methods-2",
+      "type": "Exam",
+      "earned": 40,
+      "total": 60,
+      "percentage": 67,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-05-22",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "1 Research methodology > 1.1 Experiments",
+        "2 Biological approach > 2.3 Hölzel et al. (mindfulness and brain scans)",
+        "1 Research methodology > 1.10 Types of data",
+        "5 Social approach > 5.1 Milgram (obedience)",
+        "5 Social approach > 5.3 Piliavin et al. (subway Samaritans)",
+        "1 Research methodology > 1.4 Observations",
+        "4 Learning approach > 4.2 Fagen et al. (elephant learning)",
+        "1 Research methodology > 1.11 Sampling of participants",
+        "3 Cognitive approach > 3.3 Pozzulo et al. (line-ups)",
+        "1 Research methodology > 1.15 Data analysis",
+        "1 Research methodology > 1.2 Self-reports",
+        "1 Research methodology > 1.12 Ethics",
+        "1 Research methodology > 1.3 Case studies",
+        "1 Research methodology > 1.5 Correlations",
+        "1 Research methodology > 1.13 Validity"
+      ],
+      "markedFile": "9990_w25_qp_22-Marked.docx",
+      "folder": "2026-05-23-Psych P2 Research Methods-2"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "Psych P2 Research Methods",
+      "type": "Exam",
+      "earned": 42,
+      "total": 60,
+      "percentage": 70,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-05-22",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "1 Research methodology > 1.4 Observations",
+        "1 Research methodology > 1.14 Reliability and replicability",
+        "4 Learning approach > 4.3 Saavedra and Silverman (button phobia)",
+        "2 Biological approach > 2.3 Hölzel et al. (mindfulness and brain scans)",
+        "1 Research methodology > 1.11 Sampling of participants",
+        "1 Research methodology > 1.9 Controlling of variables",
+        "3 Cognitive approach > 3.2 Baron-Cohen et al. (eyes test)",
+        "1 Research methodology > 1.1 Experiments",
+        "1 Research methodology > 1.5 Correlations",
+        "1 Research methodology > 1.15 Data analysis",
+        "1 Research methodology > 1.3 Case studies",
+        "1 Research methodology > 1.2 Self-reports",
+        "1 Research methodology > 1.13 Validity",
+        "1 Research methodology > 1.12 Ethics",
+        "1 Research methodology > 1.8 Variables"
+      ],
+      "markedFile": "9990_w25_qp_21-Marked.docx",
+      "folder": "2026-05-23-Psych P2 Research Methods"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "Psych P3 Mood Disorders Clinical",
+      "type": "Exam",
+      "earned": 20,
+      "total": 30,
+      "percentage": 66.7,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-28",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.1 Diagnostic criteria for mood (affective) disorders",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.2 Explanations of mood (affective) disorders: depressive disorder (unipolar)",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.3 Treatment and management of mood (affective) disorders"
+      ],
+      "markedFile": "QP 3_Meera Narayanan_weschool_Psychology_Assessment_29.04.2026 (1)-Marked.docx",
+      "folder": "2026-05-23-Psych P3 Mood Disorders Clinical"
+    },
+    {
+      "date": "2026-05-23",
+      "subject": "psychology",
+      "name": "Psych P4 Schizo Mood Clinical",
+      "type": "Exam",
+      "earned": 24,
+      "total": 30,
+      "percentage": 80.0,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-29",
+      "dateEvaluated": "2026-05-23",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.1 Diagnostic criteria for schizophrenia",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.1 Diagnostic criteria for mood (affective) disorders",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.2 Explanations of mood (affective) disorders: depressive disorder (unipolar)",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.3 Treatment and management of mood (affective) disorders",
+        "1 Research methodology > 1.3 Case studies",
+        "1 Research methodology > 1.13 Validity"
+      ],
+      "markedFile": "QP 4_ Meera Narayanan_weschool_Psychology_Assessment_30.04.2026 (1)-Marked.docx",
+      "folder": "2026-05-23-Psych P4 Schizo Mood Clinical"
+    },
+    {
+      "date": "2026-04-28",
+      "subject": "it",
+      "name": "IT P3 IT in society",
+      "type": "Exam",
+      "earned": 24,
+      "total": 35,
+      "percentage": 69,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-27",
+      "dateEvaluated": "2026-04-28",
+      "topicsCovered": [
+        "12 IT in society > 12.1 Digital currencies",
+        "12 IT in society > 12.2 Data mining",
+        "12 IT in society > 12.3 Social networking services/platforms",
+        "12 IT in society > 12.4 The impact of IT"
+      ],
+      "markedFile": "QP_Meera Narayanan SID _ 1535_Weschool__IT_9626_03 _Assessment-1_April 27,2026-Marked.docx",
+      "folder": "2026-04-28-IT P3 IT in society"
+    },
+    {
+      "date": "2026-04-26",
+      "subject": "business",
+      "name": "Business P3 External Influences",
+      "type": "Exam",
+      "earned": 19,
+      "total": 49,
+      "percentage": 38.8,
+      "grade": "U",
+      "flags": [],
+      "dateAnswered": "2026-04-16",
+      "dateEvaluated": "2026-04-26",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.4 Technological",
+        "6.1 External influences on business activity > 6.1.3 Social and demographic",
+        "6.1 External influences on business activity > 6.1.2 Economic",
+        "10.2 Analysis of published accounts > 10.2.5 Investment ratios",
+        "10.2 Analysis of published accounts > 10.2.2 Profitability ratios",
+        "10.2 Analysis of published accounts > 10.2.4 Gearing ratio"
+      ],
+      "markedFile": "External influences on business activity - Paper 3 - QP - 16 April 2026 copy-Marked.docx",
+      "folder": "2026-04-26-Business P3 External Influences"
+    },
+    {
+      "date": "2026-04-26",
+      "subject": "business",
+      "name": "Business P3 WeSchool UT1 Political Legal",
+      "type": "Exam",
+      "earned": 27,
+      "total": 30,
+      "percentage": 90.0,
+      "grade": "A*",
+      "flags": [],
+      "dateAnswered": "2026-04-25",
+      "dateEvaluated": "2026-04-26",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.1 Political and legal"
+      ],
+      "markedFile": "QP 3_MEERA_NARAYANAN _WeSchool_Business_UT1_25..04.2026-Marked.docx",
+      "folder": "2026-04-26-Business P3 WeSchool UT1 Political Legal"
+    },
+    {
+      "date": "2026-04-26",
+      "subject": "business",
+      "name": "Business P4 WeSchool Assessment CSR",
+      "type": "Exam",
+      "earned": 17,
+      "total": 20,
+      "percentage": 85.0,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-26",
+      "dateEvaluated": "2026-04-26",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.1 Political and legal",
+        "6.1 External influences on business activity > 6.1.3 Social and demographic"
+      ],
+      "markedFile": "QP4 _MEERA_NARAYANAN _WeSchool_Business_ASSESSMENT 1_26..04.2026-Marked.docx",
+      "folder": "2026-04-26-Business P4 WeSchool Assessment CSR"
+    },
+    {
+      "date": "2026-04-26",
+      "subject": "it",
+      "name": "IT P3 Impact of IT",
+      "type": "Exam",
+      "earned": 20,
+      "total": 24,
+      "percentage": 83.3,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-23",
+      "dateEvaluated": "2026-04-26",
+      "topicsCovered": [
+        "12 IT in society > 12.4 The impact of IT"
+      ],
+      "markedFile": "12.4 The impact of IT - Paper 3 - QP - 23 April 2026-Marked.docx",
+      "folder": "2026-04-26-IT P3 Impact of IT"
+    },
+    {
+      "date": "2026-04-25",
+      "subject": "it",
+      "name": "IT P3 IT in Society",
+      "type": "Exam",
+      "earned": 30,
+      "total": 30,
+      "percentage": 100,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-04-19",
+      "dateEvaluated": "2026-04-25",
+      "topicsCovered": [
+        "12 IT in society > 12.1 Digital currencies",
+        "12 IT in society > 12.5 Technology enhanced learning"
+      ],
+      "markedFile": "12 IT in society - Paper 3 - QP - 19 April 2026-Marked.docx",
+      "folder": "2026-04-25-IT P3 IT in Society"
+    },
+    {
+      "date": "2026-04-25",
+      "subject": "it",
+      "name": "IT P3 Social Networking 2",
+      "type": "Exam",
+      "earned": 25,
+      "total": 38,
+      "percentage": 66,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-20",
+      "dateEvaluated": "2026-04-25",
+      "topicsCovered": [
+        "12 IT in society > 12.3 Social networking services/platforms"
+      ],
+      "markedFile": "12.3 Social Networking Services-Platforms - Paper 3 - QP - 14 April 2026-Marked.docx",
+      "folder": "2026-04-25-IT P3 Social Networking 2"
+    },
+    {
+      "date": "2026-04-25",
+      "subject": "it",
+      "name": "IT P3 Social Networking",
+      "type": "Exam",
+      "earned": 26,
+      "total": 26,
+      "percentage": 100,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-04-17",
+      "dateEvaluated": "2026-04-25",
+      "topicsCovered": [
+        "12 IT in society > 12.3 Social networking services/platforms"
+      ],
+      "markedFile": "12.3 Social networking services-platforms - Paper 3 - QP - 17 April 2026-Marked.docx",
+      "folder": "2026-04-25-IT P3 Social Networking"
+    },
+    {
+      "date": "2026-04-25",
+      "subject": "psychology",
+      "name": "Psych P3 Schizo Mood",
+      "type": "Exam",
+      "earned": 56,
+      "total": 60,
+      "percentage": 93,
+      "grade": "A*",
+      "flags": [],
+      "dateAnswered": "2026-04-24",
+      "dateEvaluated": "2026-04-25",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.2 Explanations of schizophrenia",
+        "6.1 Schizophrenia > 6.1.3 Treatment and management of schizophrenia",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.1 Diagnostic criteria for mood (affective) disorders",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.2 Explanations of mood (affective) disorders: depressive disorder (unipolar)",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.3 Treatment and management of mood (affective) disorders"
+      ],
+      "markedFile": "1.1 Schizophrenia and 1.2 Mood (affective) disorders - Paper 3 - QP - 24 April 2026 (3)-Marked.docx",
+      "folder": "2026-04-25-Psych P3 Schizo Mood"
+    },
+    {
+      "date": "2026-04-24",
+      "subject": "psychology",
+      "name": "Psychology P3 Consumer Mood",
+      "type": "Exam",
+      "earned": 34,
+      "total": 46,
+      "percentage": 74,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-04-17",
+      "dateEvaluated": "2026-04-24",
+      "topicsCovered": [
+        "7.4 The product > 7.4.2 Selling the product",
+        "7.3 Consumer decision-making > 7.3.1 Consumer decision-making",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.1 Diagnostic criteria for mood (affective) disorders",
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.2 Explanations of mood (affective) disorders: depressive disorder (unipolar)"
+      ],
+      "markedFile": "1.1 Schizophrenia and 1.2 Mood (affective) disorders - Paper 3 - QP - 17 April 2026-Marked.docx",
+      "folder": "2026-04-24-Psychology P3 Consumer Mood"
+    },
+    {
+      "date": "2026-04-24",
+      "subject": "psychology",
+      "name": "Psychology P3 Oruc Advertising",
+      "type": "Exam",
+      "earned": 20,
+      "total": 34,
+      "percentage": 59,
+      "grade": "D",
+      "flags": [],
+      "dateAnswered": "2026-04-19",
+      "dateEvaluated": "2026-04-24",
+      "topicsCovered": [
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.2 Explanations of mood (affective) disorders: depressive disorder (unipolar)",
+        "7.5 Advertising > 7.5.2 Advertising–consumer interaction"
+      ],
+      "markedFile": "1.1 Schizophrenia and 1.2 Mood (affective) disorders - Paper 3 - QP - 19 April 2026-Marked.docx",
+      "folder": "2026-04-24-Psychology P3 Oruc Advertising"
+    },
+    {
+      "date": "2026-04-24",
+      "subject": "psychology",
+      "name": "Psychology P3 Schizophrenia",
+      "type": "Exam",
+      "earned": 28,
+      "total": 34,
+      "percentage": 82,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-20",
+      "dateEvaluated": "2026-04-24",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.2 Explanations of schizophrenia",
+        "6.1 Schizophrenia > 6.1.3 Treatment and management of schizophrenia"
+      ],
+      "markedFile": "Schizophrenia - Paper 3 - QP - April 2026-Marked.docx",
+      "folder": "2026-04-24-Psychology P3 Schizophrenia"
+    },
+    {
+      "date": "2026-04-17",
+      "subject": "psychology",
+      "name": "Psychology P3 Schizophrenia Mood",
+      "type": "Exam",
+      "earned": 34,
+      "total": 46,
+      "percentage": 74,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-04-16",
+      "dateEvaluated": "2026-04-17",
+      "topicsCovered": [
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.3 Treatment and management of mood (affective) disorders",
+        "6.1 Schizophrenia > 6.1.1 Diagnostic criteria for schizophrenia",
+        "6.1 Schizophrenia > 6.1.2 Explanations of schizophrenia"
+      ],
+      "markedFile": "1.1 Schizophrenia and 1.2 Mood (affective) disorders - Paper 3 - QP - 16 April 2026-Marked.docx",
+      "folder": "2026-04-17-Psychology P3 Schizophrenia Mood"
+    },
+    {
+      "date": "2026-04-16",
+      "subject": "business",
+      "name": "Business P4 External Influences",
+      "type": "Exam",
+      "earned": 12,
+      "total": 20,
+      "percentage": 60,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-15",
+      "dateEvaluated": "2026-04-16",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.1 Political and legal",
+        "6.1 External influences on business activity > 6.1.2 Economic",
+        "6.1 External influences on business activity > 6.1.3 Social and demographic"
+      ],
+      "markedFile": "External Influences on Business Activity - Paper 4 - QP - 14 April 2026-Marked.docx",
+      "folder": "2026-04-16-Business P4 External Influences"
+    },
+    {
+      "date": "2026-04-16",
+      "subject": "it",
+      "name": "IT P3 Social Networking",
+      "type": "Exam",
+      "earned": 36,
+      "total": 38,
+      "percentage": 95,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-04-16",
+      "dateEvaluated": "2026-04-16",
+      "topicsCovered": [
+        "12 IT in society > 12.3 Social networking services/platforms"
+      ],
+      "markedFile": "12.3 Social Networking Services-Platforms - Paper 3 - QP - 14 April 2026-Marked.docx",
+      "folder": "2026-04-16-IT P3 Social Networking"
+    },
+    {
+      "date": "2026-04-16",
+      "subject": "psychology",
+      "name": "Essay Mood Disorders Diagnostic",
+      "type": "Written Task",
+      "earned": 58,
+      "total": 100,
+      "percentage": 58,
+      "grade": "D",
+      "flags": [],
+      "dateAnswered": "2026-04-16",
+      "dateEvaluated": "2026-04-16",
+      "topicsCovered": [
+        "6.2 Mood (affective) disorders: depressive disorder (unipolar) and bipolar disorder > 6.2.1 Diagnostic criteria for mood (affective) disorders"
+      ],
+      "markedFile": "6.23 diagnostic criteria of mood effective disorders assignment -Marked.docx",
+      "folder": "2026-04-16-Essay Mood Disorders Diagnostic"
+    },
+    {
+      "date": "2026-04-15",
+      "subject": "it",
+      "name": "IT P4 Spreadsheets",
+      "type": "Exam",
+      "earned": 4,
+      "total": 40,
+      "percentage": 10,
+      "grade": "U",
+      "flags": [],
+      "dateAnswered": "2026-04-14",
+      "dateEvaluated": "2026-04-15",
+      "topicsCovered": [
+        "8 Spreadsheets > 8.1 Creating a spreadsheet",
+        "8 Spreadsheets > 8.3 Using a spreadsheet"
+      ],
+      "markedFile": "Spreadsheets - Paper 4 - QP - 14 April 2026-Marked.docx",
+      "folder": "2026-04-15-IT P4 Spreadsheets"
+    },
+    {
+      "date": "2026-04-15",
+      "subject": "psychology",
+      "name": "Psychology P3 Schizophrenia",
+      "type": "Exam",
+      "earned": 14,
+      "total": 34,
+      "percentage": 41,
+      "grade": "E",
+      "flags": [],
+      "dateAnswered": "2026-04-13",
+      "dateEvaluated": "2026-04-15",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.2 Explanations of schizophrenia",
+        "6.1 Schizophrenia > 6.1.3 Treatment and management of schizophrenia"
+      ],
+      "markedFile": "Schizophrenia - Paper 3 - QP - April 2026-Marked.docx",
+      "folder": "2026-04-15-Psychology P3 Schizophrenia"
+    },
+    {
+      "date": "2026-04-14",
+      "subject": "it",
+      "name": "IT P3 Digital Currencies",
+      "type": "Exam",
+      "earned": 44,
+      "total": 50,
+      "percentage": 88,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-12",
+      "dateEvaluated": "2026-04-14",
+      "topicsCovered": [
+        "12 IT in society > 12.1 Digital currencies"
+      ],
+      "markedFile": "12.1 Digital Currencies - Paper 3 - QP - April 2026-Marked.docx",
+      "folder": "2026-04-14-IT P3 Digital Currencies"
+    },
+    {
+      "date": "2026-04-11",
+      "subject": "business",
+      "name": "Business P3 External Influences",
+      "type": "Exam",
+      "earned": 55,
+      "total": 80,
+      "percentage": 68.8,
+      "grade": "C",
+      "flags": [
+        {
+          "type": "warn",
+          "text": "2 wrong Q"
+        }
+      ],
+      "dateAnswered": "2026-03-30",
+      "dateEvaluated": "2026-04-11",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.2 Economic",
+        "6.1 External influences on business activity > 6.1.6 International",
+        "6.1 External influences on business activity > 6.1.1 Political and legal",
+        "6.1 External influences on business activity > 6.1.4 Technological",
+        "6.1 External influences on business activity > 6.1.3 Social and demographic",
+        "6.1 External influences on business activity > 6.1.7 Environmental",
+        "6.1 External influences on business activity > 6.1.5 Competitors and suppliers"
+      ],
+      "markedFile": "Business_9609_External_Influences_Questions-Marked.docx",
+      "folder": "2026-04-11-Business P3 External Influences"
+    },
+    {
+      "date": "2026-04-11",
+      "subject": "it",
+      "name": "IT Assignment 1 Digital Currencies",
+      "type": "Written Task",
+      "earned": 17,
+      "total": 20,
+      "percentage": 85,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-03-30",
+      "dateEvaluated": "2026-04-11",
+      "topicsCovered": [
+        "12 IT in society > 12.1 Digital currencies"
+      ],
+      "markedFile": "Assignment 1- IT 9626 --Marked.docx",
+      "folder": "2026-04-11-IT Assignment 1 Digital Currencies"
+    },
+    {
+      "date": "2026-04-11",
+      "subject": "it",
+      "name": "IT Practical Spreadsheet Library",
+      "type": "Practical",
+      "earned": 19,
+      "total": 20,
+      "percentage": 95.0,
+      "grade": "A*",
+      "flags": [
+        {
+          "type": "good",
+          "text": "Top Score"
+        }
+      ],
+      "dateAnswered": "2026-03-31",
+      "dateEvaluated": "2026-04-11",
+      "topicsCovered": [
+        "8 Spreadsheets > 8.1 Creating a spreadsheet",
+        "8 Spreadsheets > 8.2 Testing a spreadsheet",
+        "8 Spreadsheets > 8.3 Using a spreadsheet",
+        "8 Spreadsheets > 8.4 Graphs and charts"
+      ],
+      "markedFile": "IT_Practical_Question-Marked.docx",
+      "folder": "2026-04-11-IT Practical Spreadsheet Library"
+    },
+    {
+      "date": "2026-04-11",
+      "subject": "psychology",
+      "name": "Mind Map Schizophrenia Diagnostic",
+      "type": "Mind Map",
+      "earned": 16,
+      "total": 20,
+      "percentage": 80,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-01",
+      "dateEvaluated": "2026-04-11",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.1 Diagnostic criteria for schizophrenia"
+      ],
+      "markedFile": "PSYCHOLOGY MM ASSIGNMENT _ 6.1.1 Schizophrenia_ Diagnostic Criteria-Marked.docx",
+      "folder": "2026-04-11-Mind Map Schizophrenia Diagnostic"
+    },
+    {
+      "date": "2026-04-11",
+      "subject": "psychology",
+      "name": "Psychology Written Task Schizophrenia",
+      "type": "Written Task",
+      "earned": 8,
+      "total": 10,
+      "percentage": 80,
+      "grade": "A",
+      "flags": [],
+      "dateAnswered": "2026-04-06",
+      "dateEvaluated": "2026-04-11",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.1 Diagnostic criteria for schizophrenia",
+        "6.1 Schizophrenia > 6.1.2 Explanations of schizophrenia"
+      ],
+      "markedFile": "A2_6.12_PSYCHOLOGY 9990-Marked.docx",
+      "folder": "2026-04-11-Psychology Written Task Schizophrenia"
+    },
+    {
+      "date": "2026-04-07",
+      "subject": "business",
+      "name": "Business P2 External Influences homework",
+      "type": "Written Task",
+      "earned": 8,
+      "total": 12,
+      "percentage": 67,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-04-07",
+      "dateEvaluated": "2026-04-07",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.1 Political and legal"
+      ],
+      "markedFile": "Business_hw_1_external_influences_-Marked.docx",
+      "folder": "2026-04-07-Business P2 External Influences homework"
+    },
+    {
+      "date": "2026-04-07",
+      "subject": "it",
+      "name": "Assignment-2 Unit-12.2 Data Mining",
+      "type": "Written Task",
+      "earned": 14,
+      "total": 20,
+      "percentage": 70,
+      "grade": "B",
+      "flags": [],
+      "dateAnswered": "2026-04-07",
+      "dateEvaluated": "2026-04-07",
+      "topicsCovered": [
+        "12.2 Data mining > Stages of data mining",
+        "12.2 Data mining > Uses of data mining",
+        "12.2 Data mining > Benefits and limitations"
+      ],
+      "markedFile": "Assignment-2_Unit-12_2_Data_Mining_IT9626_A_Level-Marked.docx",
+      "folder": "2026-04-07-Assignment-2 Unit-12.2 Data Mining"
+    },
+    {
+      "date": "2026-04-04",
+      "subject": "business",
+      "name": "Business P2 External Influences",
+      "type": "Exam",
+      "earned": 40,
+      "total": 60,
+      "percentage": 67,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-06",
+      "dateEvaluated": "2026-04-04",
+      "topicsCovered": [
+        "1.2 Business structure > 1.2.2 Business ownership",
+        "1.4 Business objectives > 1.4.1 Business objectives in the private sector and public sector",
+        "6.1 External influences on business activity > 6.1.2 Economic",
+        "6.1 External influences on business activity > 6.1.3 Social and demographic",
+        "6.1 External influences on business activity > 6.1.7 Environmental",
+        "6.1 External influences on business activity > 6.1.4 Technological",
+        "6.1 External influences on business activity > 6.1.1 Political and legal",
+        "6.2 Business strategy > 6.2.1 Developing business strategy"
+      ],
+      "markedFile": "Business_questions-Marked.docx",
+      "folder": "2026-04-02-Business P2 External Influences"
+    },
+    {
+      "date": "2026-04-02",
+      "subject": "business",
+      "name": "Homework — Business External Influences",
+      "type": "Homework",
+      "earned": 8,
+      "total": 12,
+      "percentage": 66.7,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-02",
+      "dateEvaluated": "2026-04-02",
+      "topicsCovered": [
+        "6.1 External influences on business activity > 6.1.1 Political and legal"
+      ],
+      "markedFile": "Business hw 1_external influences -Marked.docx",
+      "folder": "2026-04-02-Homework — Business External Influences"
+    },
+    {
+      "date": "2026-04-01",
+      "subject": "psychology",
+      "name": "Exam Paper — Psychology Clinical",
+      "type": "Exam",
+      "earned": 50,
+      "total": 80,
+      "percentage": 62.5,
+      "grade": "C",
+      "flags": [],
+      "dateAnswered": "2026-04-01",
+      "dateEvaluated": "2026-04-01",
+      "topicsCovered": [
+        "6.1 Schizophrenia > 6.1.1 Diagnostic criteria for schizophrenia",
+        "6.1 Schizophrenia > 6.1.2 Explanations of schizophrenia",
+        "6.1 Schizophrenia > 6.1.3 Treatment and management of schizophrenia",
+        "1 Research methodology > 1.14 Reliability and replicability",
+        "1 Research methodology > 1.13 Validity"
+      ],
+      "markedFile": "9990_Schizophrenia_CambridgeStyle_QP-Marked.docx",
+      "folder": "2026-04-01-Exam Paper — Psychology Clinical"
+    }
+  ],
+  "aoTotals": {
+    "AO1": {
+      "earned": 539,
+      "total": 647
+    },
+    "AO2": {
+      "earned": 280,
+      "total": 402
+    },
+    "AO3": {
+      "earned": 366,
+      "total": 533
+    },
+    "AO4": {
+      "earned": 58,
+      "total": 92
+    }
+  },
+  "aoNote": "Aggregated from 42 assessments with AO data (excludes Exam & Mind Map & Written Task which use dimension-based marking)",
+  "topicScores": {
+    "business": [
+      {
+        "n": "1.1 Enterprise > 1.1.1 The nature",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1.1 Enterprise > 1.1.2 The role",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1.1 Enterprise > 1.1.3 Business plans",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1.2 Business structure > 1.2.1 Economic sectors",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1.2 Business structure > 1.2.2 Business ownership",
+        "s": 100,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1.3 Size > 1.3.1 Measurements",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1.3 Size > 1.3.2 Significance",
+        "s": 88,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1.3 Size > 1.3.3 Business growth",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1.4 Business > 1.4.1 Business objectives in the p…",
+        "s": 90,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1.4 Business objectives > 1.4.2 Objectives",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1.5 Stakeholders > 1.5.1 Business stakeholders",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1.5 Stakeholders > 1.5.2 The relative importance …",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2.1 Human > 2.1.1 Purpose and roles",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2.1 Human > 2.1.2 Workforce planning",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2.1 Human resource management > 2.1.3 Recruitment",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2.1 Human resource management > 2.1.4 Redundancy",
+        "s": 40,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "2.1 Human resource management > 2.1.5 Morale",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "2.1 Human resource management > 2.1.6 Training",
+        "s": 86,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "2.1 Human resource management > 2.1.7 Management",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2.2 Motivation > 2.2.1 Motivation as a tool",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "2.2 Motivation > 2.2.2 Human needs",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2.2 Motivation > 2.2.3 Motivation theories",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "2.2 Motivation > 2.2.4 Motivation methods in prac…",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "2.3 Management > 2.3.1 Management",
+        "s": 86,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "3.1 The nature > 3.1.1 The role",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "3.1 The nature > 3.1.2 Demand",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.1 The nature > 3.1.3 Markets",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.1 The nature > 3.1.4 Consumer",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.1 The nature > 3.1.5 Mass marketing",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "3.1 The nature > 3.1.6 Market segmentation",
+        "s": 92,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "3.1 The > 3.1.7 Customer relationship marketing",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.2 Market research > 3.2.1 The purposes",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.2 Market research > 3.2.2 Primary research",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.2 Market research > 3.2.3 Sampling",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.2 Market research > 3.2.4 Market research data",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.3 The marketing mix > 3.3.1 The elements",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.3 The marketing mix > 3.3.2 Product",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.3 The > 3.3.3 Product portfolio analysis",
+        "s": 75,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "3.3 The marketing mix > 3.3.4 Pricing methods",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3.3 The marketing mix > 3.3.5 Promotion methods",
+        "s": 42,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "3.3 The marketing mix > 3.3.6 Place (channels",
+        "s": 33,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "4.1 The > 4.1.1 The transformational process",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4.1 The > 4.1.2 Efficiency, effectiveness, produc…",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "4.1 The nature > 4.1.3 Capital intensive",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4.1 The nature > 4.1.4 Operations methods",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4.2 Inventory > 4.2.1 Managing inventory",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4.2 Inventory management > 4.2.2 Just in Time",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "4.3 Capacity > 4.3.1 Significance and measurement",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4.3 Capacity utilisation > 4.3.2 Outsourcing",
+        "s": 92,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "5.1 Business finance > 5.1.1 The need",
+        "s": 50,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "5.1 Business finance > 5.1.2 Working capital",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5.2 Sources > 5.2.1 Business ownership and sources",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5.2 Sources > 5.2.2 Internal and external sources",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "5.2 Sources > 5.2.3 Factors affecting the sources",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5.2 Sources > 5.2.4 Selecting the source",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5.3 Forecasting > 5.3.1 Cash flow forecasts",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5.4 Costs > 5.4.1 Cost information",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "5.4 Costs > 5.4.2 Approaches to costing",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5.4 Costs > 5.4.3 Uses",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "5.4 Costs > 5.4.4 Break-even analysis",
+        "s": 89,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "5.5 Budgets > 5.5.1 The meaning and purpose",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "5.5 Budgets > 5.5.2 Variances",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "6.1 External influences > 6.1.1 Political",
+        "s": 74,
+        "level": "A2",
+        "occ": 7
+      },
+      {
+        "n": "6.1 External influences > 6.1.2 Economic",
+        "s": 53,
+        "level": "A2",
+        "occ": 4
+      },
+      {
+        "n": "6.1 External influences > 6.1.3 Social",
+        "s": 84,
+        "level": "A2",
+        "occ": 6
+      },
+      {
+        "n": "6.1 External influences > 6.1.4 Technological",
+        "s": 75,
+        "level": "A2",
+        "occ": 3
+      },
+      {
+        "n": "6.1 External influences > 6.1.5 Competitors",
+        "s": 73,
+        "level": "A2",
+        "occ": 2
+      },
+      {
+        "n": "6.1 External influences > 6.1.6 International",
+        "s": 88,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "6.1 External influences > 6.1.7 Environmental",
+        "s": 79,
+        "level": "A2",
+        "occ": 2
+      },
+      {
+        "n": "6.2 Business > 6.2.1 Developing business strategy",
+        "s": 50,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "6.2 Business strategy > 6.2.2 Corporate planning",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 Organisational > 7.1.1 The relationship betwe…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 Organisational structure > 7.1.2 Types",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 Organisational structure > 7.1.3 Delegation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 Organisational > 7.1.4 Control, authority",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 Organisational > 7.1.5 Centralisation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 Organisational structure > 7.1.6 Line",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 Business communication > 7.2.1 Purposes",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 Business communication > 7.2.2 Methods",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 Business communication > 7.2.3 Channels",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 Business > 7.2.4 Barriers to communication",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 Business communication > 7.2.5 The role",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.3 Leadership > 7.3.1 Leadership",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.3 Leadership > 7.3.2 Theories",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.3 Leadership > 7.3.3 Emotional intelligence/emo…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.4 Human > 7.4.1 Approaches to human resource ma…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.1 Marketing analysis > 8.1.1 Elasticity",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.1 Marketing analysis > 8.1.2 Product development",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.1 Marketing analysis > 8.1.3 Sales forecasting",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.2 Marketing > 8.2.1 Planning the marketing stra…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.2 Marketing > 8.2.2 Approaches to marketing str…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.2 Marketing strategy > 8.2.3 Strategies",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.1 Location > 9.1.1 Location",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.1 Location > 9.1.2 Scale",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.2 Quality management > 9.2.1 Quality control",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.2 Quality management > 9.2.2 Benchmarking",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Operations > 9.3.1 Operational decisions",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Operations strategy > 9.3.2 Flexibility",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Operations > 9.3.3 Enterprise resource planni…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Operations strategy > 9.3.4 Lean production",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Operations > 9.3.5 Operations planning",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.1 Financial statements > 10.1.1 Statement",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.1 Financial statements > 10.1.2 Statement",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.1 Financial > 10.1.3 Inventory valuation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.1 Financial statements > 10.1.4 Depreciation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.2 Analysis > 10.2.1 Liquidity ratios",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.2 Analysis > 10.2.2 Profitability ratios",
+        "s": 0,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "10.2 Analysis > 10.2.3 Financial efficiency ratios",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.2 Analysis > 10.2.4 Gearing ratio",
+        "s": 0,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "10.2 Analysis > 10.2.5 Investment ratios",
+        "s": 31,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "10.3 Investment appraisal > 10.3.1 The concept",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.3 Investment > 10.3.2 Basic methods: payback, …",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.3 Investment > 10.3.3 Discounted cash flow met…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.3 Investment > 10.3.4 Investment appraisal dec…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.4 Finance > 10.4.1 The use",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "10.4 Finance > 10.4.2 The use",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      }
+    ],
+    "it": [
+      {
+        "n": "1 Data processing > 1.1 Data",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1 Data processing > 1.2 Quality",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1 Data processing > 1.3 Encryption",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1 Data processing > 1.4 Checking the accuracy",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1 Data processing > 1.5 Data processing",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2 Hardware > 2.1 Mainframe computers",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2 Hardware > 2.2 System software",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2 Hardware > 2.3 Utility software",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2 Hardware > 2.4 Custom-written software",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "2 Hardware > 2.5 User interfaces",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3 Monitoring > 3.1 Monitoring",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "3 Monitoring > 3.2 Control technologies",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4 Algorithms > 4.1 Algorithms",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "4 Algorithms > 4.2 Flowcharts",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5 eSecurity > 5.1 Personal data",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "5 eSecurity > 5.2 Malware",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "6 The digital divide > 6.1 The digital divide",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "7 Expert systems > 7.1 Expert systems",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "8 Spreadsheets > 8.1 Creating a spreadsheet",
+        "s": 39,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "8 Spreadsheets > 8.2 Testing a spreadsheet",
+        "s": 95,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "8 Spreadsheets > 8.3 Using a spreadsheet",
+        "s": 27,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "8 Spreadsheets > 8.4 Graphs",
+        "s": 38,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "9 Modelling > 9.1 Modelling",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "10 Database > 10.1 Creating a database",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "10 Database > 10.2 Normalisation to third normal …",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "10 Database > 10.3 Data dictionary",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "10 Database > 10.4 File",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "11 Video > 11.1 Video editing",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "11 Video > 11.2 Audio editing",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "12 IT in society > 12.1 Digital currencies",
+        "s": 88,
+        "level": "A2",
+        "occ": 4
+      },
+      {
+        "n": "12 IT in society > 12.2 Data mining",
+        "s": 61,
+        "level": "A2",
+        "occ": 2
+      },
+      {
+        "n": "12 IT > 12.3 Social networking services/platforms",
+        "s": 85,
+        "level": "A2",
+        "occ": 4
+      },
+      {
+        "n": "12 IT in society > 12.4 The impact",
+        "s": 86,
+        "level": "A2",
+        "occ": 4
+      },
+      {
+        "n": "12 IT > 12.5 Technology enhanced learning",
+        "s": 100,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "13 New > 13.1 New",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications technology > 14.1 Networks",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.2 Components in a network",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.3 Network servers",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.4 Cloud computing",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.5 Data transmission across…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.6 Network protocols",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.7 Wireless technology",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.8 Mobile communication sys…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.9 Network security",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "14 Communications > 14.10 Disaster recovery manag…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "15 Project management > 15.1 The stages",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "15 Project > 15.2 Project management software",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "15 Project management > 15.3 Tools and techniques",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System > 16.1 The stages in the system life cy…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.2 Analysis",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.3 Design",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.4 Development",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.5 Implementation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.6 Documentation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.7 Evaluation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.8 Methods",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.9 Prototyping",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "16 System life cycle > 16.10 Maintenance",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "17 Data Analysis > 17.1 Data Analysis",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "18 Mail merge > 18.1 Mail merge",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "19 Graphics creation > 19.1 Common graphics skills",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "19 Graphics creation > 19.2 Vector graphics",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "19 Graphics creation > 19.3 Bitmap images",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "19 Graphics creation > 19.4 Compression",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "19 Graphics creation > 19.5 Text",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "20 Animation > 20.1 Animation",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "21 Programming > 21.1 Programming",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      }
+    ],
+    "psychology": [
+      {
+        "n": "1 Research methodology > 1.1 Experiments",
+        "s": 61,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.2 Self-reports",
+        "s": 75,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.3 Case studies",
+        "s": 85,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "1 Research methodology > 1.4 Observations",
+        "s": 60,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.5 Correlations",
+        "s": 75,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.6 Longitudinal studies",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1 Research methodology > 1.7 Aims",
+        "s": null,
+        "level": "AS",
+        "occ": 0
+      },
+      {
+        "n": "1 Research methodology > 1.8 Variables",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1 Research methodology > 1.9 Controlling",
+        "s": 0,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1 Research methodology > 1.10 Types",
+        "s": 0,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "1 Research methodology > 1.11 Sampling",
+        "s": 50,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.12 Ethics",
+        "s": 79,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.13 Validity",
+        "s": 70,
+        "level": "AS",
+        "occ": 4
+      },
+      {
+        "n": "1 Research methodology > 1.14 Reliability",
+        "s": 43,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "1 Research methodology > 1.15 Data analysis",
+        "s": 71,
+        "level": "AS",
+        "occ": 2
+      },
+      {
+        "n": "2 Biological approach > 2.1 Dement and Kleitman",
+        "s": 100,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "2 Biological approach > 2.2 Hassett et al.",
+        "s": 50,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "2 Biological approach > 2.3 Hölzel et al.",
+        "s": 69,
+        "level": "AS",
+        "occ": 5
+      },
+      {
+        "n": "3 Cognitive approach > 3.1 Andrade",
+        "s": 80,
+        "level": "AS",
+        "occ": 1
+      },
+      {
+        "n": "3 Cognitive approach > 3.2 Baron-Cohen et al.",
+        "s": 68,
+        "level": "AS",
+        "occ": 4
+      },
+      {
+        "n": "3 Cognitive approach > 3.3 Pozzulo et al.",
+        "s": 56,
+        "level": "AS",
+        "occ": 4
+      },
+      {
+        "n": "4 Learning approach > 4.1 Bandura et al.",
+        "s": 57,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "4 Learning approach > 4.2 Fagen et al.",
+        "s": 42,
+        "level": "AS",
+        "occ": 4
+      },
+      {
+        "n": "4 Learning approach > 4.3 Saavedra and Silverman",
+        "s": 65,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "5 Social approach > 5.1 Milgram",
+        "s": 56,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "5 Social approach > 5.2 Perry et al.",
+        "s": 56,
+        "level": "AS",
+        "occ": 3
+      },
+      {
+        "n": "5 Social approach > 5.3 Piliavin et al.",
+        "s": 57,
+        "level": "AS",
+        "occ": 4
+      },
+      {
+        "n": "6.1 Schizophrenia > 6.1.1 Diagnostic criteria",
+        "s": 75,
+        "level": "A2",
+        "occ": 6
+      },
+      {
+        "n": "6.1 Schizophrenia > 6.1.2 Explanations",
+        "s": 72,
+        "level": "A2",
+        "occ": 6
+      },
+      {
+        "n": "6.1 Schizophrenia > 6.1.3 Treatment and management",
+        "s": 64,
+        "level": "A2",
+        "occ": 4
+      },
+      {
+        "n": "6.2 Mood > 6.2.1 Diagnostic criteria",
+        "s": 67,
+        "level": "A2",
+        "occ": 5
+      },
+      {
+        "n": "6.2 Mood > 6.2.2 Explanations",
+        "s": 67,
+        "level": "A2",
+        "occ": 5
+      },
+      {
+        "n": "6.2 Mood > 6.2.3 Treatment and management",
+        "s": 82,
+        "level": "A2",
+        "occ": 4
+      },
+      {
+        "n": "6.3 Impulse > 6.3.1 Diagnostic criteria",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.3 Impulse control disorders > 6.3.2 Explanations",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.3 Impulse > 6.3.3 Treatment and management",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.4 Anxiety disorders > 6.4.1 Diagnostic criteria",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.4 Anxiety disorders > 6.4.2 Explanations",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.4 Anxiety > 6.4.3 Treatment and management",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.5 Obsessive-compulsive > 6.5.1 Diagnostic crite…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.5 Obsessive-compulsive > 6.5.2 Explanations",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "6.5 Obsessive-compulsive > 6.5.3 Treatment and ma…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 The > 7.1.1 Retail store design",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 The physical environment > 7.1.2 Sound",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.1 The > 7.1.3 Retail atmospherics",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 The > 7.2.1 Environmental influences",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 The > 7.2.2 Menu design psychology",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.2 The > 7.2.3 Consumer behaviour",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.3 Consumer > 7.3.1 Consumer decision-making",
+        "s": 92,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "7.3 Consumer > 7.3.2 Choice heuristics",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.3 Consumer > 7.3.3 Mistakes in decision-making",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.4 The product > 7.4.1 Packaging and positioning",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.4 The product > 7.4.2 Selling the product",
+        "s": 92,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "7.4 The product > 7.4.3 Buying the product",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.5 Advertising > 7.5.1 Types",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "7.5 Advertising > 7.5.2 Advertising–consumer inte…",
+        "s": 50,
+        "level": "A2",
+        "occ": 1
+      },
+      {
+        "n": "7.5 Advertising > 7.5.3 Brand awareness",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.1 The > 8.1.1 Practitioner",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.1 The > 8.1.2 Patient",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.1 The > 8.1.3 Misusing health services",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.2 Adherence to medical advice > 8.2.1 Types",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.2 Adherence > 8.2.2 Measuring non-adherence",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.2 Adherence > 8.2.3 Improving adherence",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.3 Pain > 8.3.1 Types and theories",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.3 Pain > 8.3.2 Measuring pain",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.3 Pain > 8.3.3 Managing",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.4 Stress > 8.4.1 Sources",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.4 Stress > 8.4.2 Measures",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.4 Stress > 8.4.3 Managing stress",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.5 Health promotion > 8.5.1 Strategies",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.5 Health > 8.5.2 Health promotion in schools",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "8.5 Health > 8.5.3 Individual factors in changing…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.1 Motivation to work > 9.1.1 Need theories",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.1 Motivation to work > 9.1.2 Cognitive theories",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.1 Motivation to work > 9.1.3 Motivators at work",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.2 Leadership > 9.2.1 Traditional and modern the…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.2 Leadership > 9.2.2 Leadership style",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.2 Leadership > 9.2.3 Leaders",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Group > 9.3.1 Group development",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Group > 9.3.2 Individual",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.3 Group > 9.3.3 Conflict at work",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.4 Organisational > 9.4.1 Physical work conditio…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.4 Organisational > 9.4.2 Temporal conditions",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.4 Organisational work conditions > 9.4.3 Health",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.5 Satisfaction at work > 9.5.1 Theories",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.5 Satisfaction > 9.5.2 Measuring job-satisfacti…",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      },
+      {
+        "n": "9.5 Satisfaction at work > 9.5.3 Attitudes to work",
+        "s": null,
+        "level": "A2",
+        "occ": 0
+      }
+    ]
+  },
+  "insights": {
+    "strengths": [
+      "Business is the strongest subject at 80.3% average",
+      "AO1 (Knowledge) is consistently strong: 83% hit rate",
+      "IT IT P3 IT in Society scored A*-grade (100%)",
+      "IT IT P3 Social Networking scored A*-grade (100%)"
+    ],
+    "improvements": [
+      "Business Business P3 External Influences: answered wrong questions (16 marks lost)",
+      "AO4 (Evaluation) needs attention: 63% across all papers",
+      "IT IT P4 Spreadsheets scored 10% - review weak areas",
+      "Read questions carefully - misread questions can cost significant marks"
+    ],
+    "chapterStrengths": [
+      {
+        "topic": "1.1 Enterprise > 1.1.3 Business plans",
+        "pct": 100,
+        "note": "Strong performance in Business"
+      },
+      {
+        "topic": "1.2 Business structure > 1.2.1 Economic sectors",
+        "pct": 100,
+        "note": "Strong performance in Business"
+      },
+      {
+        "topic": "1.2 Business structure > 1.2.2 Business ownership",
+        "pct": 100,
+        "note": "Strong performance in Business"
+      },
+      {
+        "topic": "1.5 Stakeholders > 1.5.1 Business stakeholders",
+        "pct": 100,
+        "note": "Strong performance in Business"
+      }
+    ],
+    "chapterWeaknesses": [
+      {
+        "topic": "10.2 Analysis > 10.2.2 Profitability ratios",
+        "pct": 0,
+        "note": "Critical - requires significant attention"
+      },
+      {
+        "topic": "10.2 Analysis > 10.2.4 Gearing ratio",
+        "pct": 0,
+        "note": "Critical - requires significant attention"
+      },
+      {
+        "topic": "1 Research methodology > 1.9 Controlling",
+        "pct": 0,
+        "note": "Critical - requires significant attention"
+      },
+      {
+        "topic": "1 Research methodology > 1.10 Types",
+        "pct": 0,
+        "note": "Critical - requires significant attention"
+      }
+    ]
+  }
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- TOP NAV                                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="top-nav">
+  <div class="brand">Meera <span>&middot; Study Dashboard</span></div>
+  <button class="nav-btn active" data-view="home">Home</button>
+  <button class="nav-btn" data-view="as-prof">AS Proficiency</button>
+  <button class="nav-btn" data-view="as-assess">AS Assessments</button>
+  <button class="nav-btn" data-view="a-prof">A Proficiency</button>
+  <button class="nav-btn" data-view="a-assess">A Assessments</button>
+  <button class="nav-btn" data-view="recent">Recently Evaluated <span id="new-count" style="display:none" class="new-badge"></span></button>
+  <div class="nav-spacer"></div>
+  <div class="nav-meta" id="nav-meta"></div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗ -->
+<!-- ║  VIEW: HOME                                  ║ -->
+<!-- ╚══════════════════════════════════════════════╝ -->
+<div id="view-home" class="view active">
+
+<div class="hero">
+  <h1>Meera's Study Dashboard</h1>
+  <p>Cambridge International &mdash; Psychology, Business, IT</p>
+</div>
+
+<div class="level-section">
+  <div class="level-section-header">
+    <div class="lvl-tag as-tag">AS Level</div>
+    <div class="level-section-actions">
+      <button class="nav-btn" style="padding:4px 10px;" onclick="switchView('as-prof')">Proficiency &rarr;</button>
+      <button class="nav-btn" style="padding:4px 10px;" onclick="switchView('as-assess')">Assessments &rarr;</button>
+    </div>
+  </div>
+  <div class="subject-grid" id="home-as-subjects"></div>
+  
+</div>
+
+<div class="level-section">
+  <div class="level-section-header">
+    <div class="lvl-tag a-tag">A Level</div>
+    <div class="level-section-actions">
+      <button class="nav-btn" style="padding:4px 10px;" onclick="switchView('a-prof')">Proficiency &rarr;</button>
+      <button class="nav-btn" style="padding:4px 10px;" onclick="switchView('a-assess')">Assessments &rarr;</button>
+    </div>
+  </div>
+  <div class="subject-grid" id="home-a-subjects"></div>
+  
+</div>
+
+<div style="max-width:1100px;margin:0 auto;">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+    <div class="section-title" id="home-recent-title" style="margin:0;border:none;padding:0;">Recently Evaluated</div>
+    <button class="nav-btn" style="padding:6px 10px;" onclick="switchView('recent')">View all &rarr;</button>
+  </div>
+  <div id="home-recent" class="recent-list"></div>
+</div>
+
+<div class="footer" id="home-footer"></div>
+</div><!-- end view-home -->
+
+
+<!-- ╔══════════════════════════════════════════════╗ -->
+<!-- ║  VIEW: RECENTLY EVALUATED                    ║ -->
+<!-- ╚══════════════════════════════════════════════╝ -->
+<div id="view-recent" class="view">
+
+<h1 style="margin-bottom:6px">Recently Evaluated</h1>
+<p style="color:var(--muted);margin-bottom:20px" id="recent-subtitle"></p>
+
+<div class="filter-bar">
+  <button class="on" data-filter="all">All Levels</button>
+  <button data-filter="AS">AS Only</button>
+  <button data-filter="A">A Level Only</button>
+  <span style="flex:1"></span>
+  <button class="on" data-subfilter="all">All Subjects</button>
+  <button data-subfilter="psychology">Psychology</button>
+  <button data-subfilter="business">Business</button>
+  <button data-subfilter="it">IT</button>
+</div>
+
+<div id="recent-list" class="recent-list"></div>
+
+<div class="footer" id="recent-footer"></div>
+</div><!-- end view-recent -->
+
+
+<!-- ╔══════════════════════════════════════════════╗ -->
+<!-- ║  VIEW: AS LEVEL                              ║ -->
+<!-- ╚══════════════════════════════════════════════╝ -->
+<div id="view-as-prof" class="view">
+  <div id="AS-tab-chapter">
+    <h1>Proficiency Report &mdash; AS Level</h1>
+    <p class="subtitle" id="AS-t2-subtitle" style="color:var(--muted)"></p>
+
+    <div class="grid grid-2">
+      <div class="card"><h3>Overall Blended Progress</h3><div class="big-num" id="AS-t2-blended" style="color:var(--red)">&ndash;</div><div style="color:var(--muted);font-size:13px;margin-top:4px">Coverage &times; quality toward 85% goal</div></div>
+      <div class="card"><h3>Topics Below 85% Goal</h3><div class="big-num" id="AS-t2-below85" style="color:var(--amber)">&ndash;</div><div id="AS-t2-below85-detail" style="color:var(--muted);font-size:13px;margin-top:4px"></div></div>
+    </div>
+
+    <div class="grid grid-3" id="AS-t2-pie-row"></div>
+    <div id="AS-t2-subject-grids"></div>
+
+    <div class="section-title">Key Insights by Chapter</div>
+    <div class="grid grid-2">
+      <div class="insight-box"><h3 style="color:var(--green)">Strongest Chapters</h3><ul id="AS-t2-ch-strengths"></ul></div>
+      <div class="insight-box"><h3 style="color:var(--red)">Chapters Needing Attention</h3><ul id="AS-t2-ch-weaknesses"></ul></div>
+    </div>
+
+    <div class="footer" id="AS-t2-footer"></div>
+  </div>
+</div><!-- end view-as-prof -->
+
+
+<!-- ╔══════════════════════════════════════════════╗ -->
+<!-- ║  VIEW: AS ASSESSMENTS                        ║ -->
+<!-- ╚══════════════════════════════════════════════╝ -->
+<div id="view-as-assess" class="view">
+  <div id="AS-tab-assess">
+    <h1>Meera's Assessment Dashboard &mdash; AS Level</h1>
+    <p class="subtitle" id="AS-t1-subtitle" style="color:var(--muted)"></p>
+
+    <div class="grid grid-2">
+      <div class="card"><h3>Assessments Taken</h3><div class="big-num" id="AS-t1-count" style="color:var(--blue)">&ndash;</div><div id="AS-t1-count-detail" style="color:var(--muted);font-size:13px;margin-top:4px"></div></div>
+      <div class="card"><h3>Grade Distribution</h3><div id="AS-t1-grades" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div></div>
+    </div>
+
+    <div class="grid grid-3" id="AS-t1-subject-cards"></div>
+
+    <div class="card"><h3>Performance Timeline</h3><div class="chart-container"><canvas id="AS-timelineChart"></canvas></div></div>
+
+    <div class="section-title">Key Insights</div>
+    <div class="grid grid-2">
+      <div class="insight-box"><h3 style="color:var(--amber)">Strengths</h3><ul id="AS-t1-strengths"></ul></div>
+      <div class="insight-box"><h3 style="color:var(--amber)">Areas for Improvement</h3><ul id="AS-t1-improvements"></ul></div>
+    </div>
+
+    <div class="card"><h3>Overall Assessment Objective Scores</h3>
+      <div class="grid grid-4" id="AS-t1-ao" style="margin-top:12px;margin-bottom:0"></div>
+      <div id="AS-t1-ao-note" style="color:var(--muted);font-size:12px;margin-top:14px;text-align:center"></div>
+    </div>
+
+    <div class="section-title">All Assessment Results</div>
+    <div class="filter-bar" data-level="AS">
+      <button class="on" data-subfilter="all">All Subjects</button>
+      <button data-subfilter="psychology">Psychology</button>
+      <button data-subfilter="business">Business</button>
+      <button data-subfilter="it">IT</button>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <table><thead><tr><th>Date</th><th>Subject</th><th>Assessment</th><th>Type</th><th>Score</th><th>%</th><th style="min-width:100px">Progress</th><th>Grade</th></tr></thead><tbody id="AS-t1-results"></tbody></table>
+    </div>
+
+    <div class="footer" id="AS-t1-footer"></div>
+  </div>
+</div><!-- end view-as-assess -->
+
+
+<!-- ╔══════════════════════════════════════════════╗ -->
+<!-- ║  VIEW: A LEVEL                               ║ -->
+<!-- ╚══════════════════════════════════════════════╝ -->
+<div id="view-a-prof" class="view">
+  <div id="A-tab-chapter">
+    <h1>Proficiency Report &mdash; A Level</h1>
+    <p class="subtitle" id="A-t2-subtitle" style="color:var(--muted)"></p>
+
+    <div class="grid grid-2">
+      <div class="card"><h3>Overall Blended Progress</h3><div class="big-num" id="A-t2-blended" style="color:var(--red)">&ndash;</div><div style="color:var(--muted);font-size:13px;margin-top:4px">Coverage &times; quality toward 85% goal</div></div>
+      <div class="card"><h3>Topics Below 85% Goal</h3><div class="big-num" id="A-t2-below85" style="color:var(--amber)">&ndash;</div><div id="A-t2-below85-detail" style="color:var(--muted);font-size:13px;margin-top:4px"></div></div>
+    </div>
+
+    <div class="grid grid-3" id="A-t2-pie-row"></div>
+    <div id="A-t2-subject-grids"></div>
+
+    <div class="section-title">Key Insights by Chapter</div>
+    <div class="grid grid-2">
+      <div class="insight-box"><h3 style="color:var(--green)">Strongest Chapters</h3><ul id="A-t2-ch-strengths"></ul></div>
+      <div class="insight-box"><h3 style="color:var(--red)">Chapters Needing Attention</h3><ul id="A-t2-ch-weaknesses"></ul></div>
+    </div>
+
+    <div class="footer" id="A-t2-footer"></div>
+  </div>
+</div><!-- end view-a-prof -->
+
+
+<!-- ╔══════════════════════════════════════════════╗ -->
+<!-- ║  VIEW: A ASSESSMENTS                         ║ -->
+<!-- ╚══════════════════════════════════════════════╝ -->
+<div id="view-a-assess" class="view">
+  <div id="A-tab-assess">
+    <h1>Meera's Assessment Dashboard &mdash; A Level</h1>
+    <p class="subtitle" id="A-t1-subtitle" style="color:var(--muted)"></p>
+
+    <div class="grid grid-2">
+      <div class="card"><h3>Assessments Taken</h3><div class="big-num" id="A-t1-count" style="color:var(--blue)">&ndash;</div><div id="A-t1-count-detail" style="color:var(--muted);font-size:13px;margin-top:4px"></div></div>
+      <div class="card"><h3>Grade Distribution</h3><div id="A-t1-grades" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div></div>
+    </div>
+
+    <div class="grid grid-3" id="A-t1-subject-cards"></div>
+
+    <div class="card"><h3>Performance Timeline</h3><div class="chart-container"><canvas id="A-timelineChart"></canvas></div></div>
+
+    <div class="section-title">Key Insights</div>
+    <div class="grid grid-2">
+      <div class="insight-box"><h3 style="color:var(--amber)">Strengths</h3><ul id="A-t1-strengths"></ul></div>
+      <div class="insight-box"><h3 style="color:var(--amber)">Areas for Improvement</h3><ul id="A-t1-improvements"></ul></div>
+    </div>
+
+    <div class="card"><h3>Overall Assessment Objective Scores</h3>
+      <div class="grid grid-4" id="A-t1-ao" style="margin-top:12px;margin-bottom:0"></div>
+      <div id="A-t1-ao-note" style="color:var(--muted);font-size:12px;margin-top:14px;text-align:center"></div>
+    </div>
+
+    <div class="section-title">All Assessment Results</div>
+    <div class="filter-bar" data-level="A">
+      <button class="on" data-subfilter="all">All Subjects</button>
+      <button data-subfilter="psychology">Psychology</button>
+      <button data-subfilter="business">Business</button>
+      <button data-subfilter="it">IT</button>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <table><thead><tr><th>Date</th><th>Subject</th><th>Assessment</th><th>Type</th><th>Score</th><th>%</th><th style="min-width:100px">Progress</th><th>Grade</th></tr></thead><tbody id="A-t1-results"></tbody></table>
+    </div>
+
+    <div class="footer" id="A-t1-footer"></div>
+  </div>
+</div><!-- end view-a-assess -->
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- RENDERING SCRIPT                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<script>
+const ALL = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+// ─── Backwards-compat shim ───────────────────────────────────────────────
+// The current build_dashboard.py emits a slim payload (meta, subjects,
+// assessments, aoTotals, aoNote, topicScores, insights). The rendering code
+// also reads ALL.recent / ALL.AS / ALL.A and several ALL.meta counters.
+// When those keys are missing we derive them client-side from `assessments`
+// so the dashboard renders correctly regardless of build-script version.
+(function ensureDerivedFields(){
+  const subjMeta = ALL.subjects || {};
+  const assessments = Array.isArray(ALL.assessments) ? ALL.assessments : [];
+
+  // Chapter-based level rule, mirrors classify_level() in build_dashboard.py.
+  // psychology / business: chapters 1–5 → AS, 6+ → A. IT: 1–11 → AS, 12+ → A.
+  function chapterOf(topic){
+    if(!topic) return null;
+    const first = String(topic).split(' > ')[0].trim();
+    const m = first.match(/^(\d+)/);
+    return m ? parseInt(m[1], 10) : null;
+  }
+  function topicLevel(subject, topic){
+    const ch = chapterOf(topic);
+    if(ch === null) return null;
+    const cutoff = subject === 'it' ? 11 : 5;
+    return ch <= cutoff ? 'AS' : 'A';
+  }
+  function assessmentLevel(a){
+    const topics = a.topicsCovered || a.topics || [];
+    const levels = new Set();
+    topics.forEach(t => { const lv = topicLevel(a.subject, t); if(lv) levels.add(lv); });
+    if(levels.size === 0) return null;     // unknown → caller can default
+    if(levels.size === 1) return [...levels][0];
+    return 'AS/A';                          // mixed → cross-level marker
+  }
+
+  // ── ALL.recent ─────────────────────────────────────────────────────────
+  if(!Array.isArray(ALL.recent)){
+    ALL.recent = assessments
+      .map(a => Object.assign({}, a, { level: a.level || assessmentLevel(a) || 'AS' }))
+      .sort((x, y) => {
+        const dx = x.dateEvaluated || x.dateAnswered || x.date || '';
+        const dy = y.dateEvaluated || y.dateAnswered || y.date || '';
+        return String(dy).localeCompare(String(dx));
+      });
+  }
+
+  // ── ALL.AS / ALL.A ─────────────────────────────────────────────────────
+  function bucketForLevel(lvl){
+    // Assessments: pure level matches + cross-level 'AS/A' show under both.
+    const asm = ALL.recent.filter(a => a.level === lvl || a.level === 'AS/A');
+    // topicScores: each topic carries level 'AS' or 'A2'. Filter accordingly.
+    const wantLevel = lvl === 'AS' ? 'AS' : 'A2';
+    const ts = {};
+    Object.entries(ALL.topicScores || {}).forEach(([subj, arr]) => {
+      ts[subj] = (arr || []).filter(t => t.level === wantLevel);
+    });
+    return {
+      assessments: asm,
+      subjects: subjMeta,
+      topicScores: ts,
+      meta: Object.assign({}, ALL.meta || {}),
+      insights: ALL.insights || { strengths: [], improvements: [] },
+      aoTotals: ALL.aoTotals || {},
+      aoNote: ALL.aoNote || '',
+    };
+  }
+  if(!ALL.AS) ALL.AS = bucketForLevel('AS');
+  if(!ALL.A ) ALL.A  = bucketForLevel('A');
+
+  // ── meta counters ──────────────────────────────────────────────────────
+  ALL.meta = ALL.meta || {};
+  if(ALL.meta.uniqueCount == null) ALL.meta.uniqueCount = ALL.recent.length;
+  if(ALL.meta.totalCount  == null) ALL.meta.totalCount  = assessments.length;
+  if(ALL.meta.asCount     == null) ALL.meta.asCount     = ALL.recent.filter(r => r.level === 'AS' || r.level === 'AS/A').length;
+  if(ALL.meta.aCount      == null) ALL.meta.aCount      = ALL.recent.filter(r => r.level === 'A'  || r.level === 'AS/A').length;
+})();
+
+const GOAL = 85;
+
+// Google Drive account where Meera's marked files live.
+const DRIVE_ACCOUNT = 'meeranarayanan2009@gmail.com';
+function driveFolderUrl(folderName){
+  // Quoted phrase + type:folder — exact name match, folders only.
+  return 'https://drive.google.com/drive/search?q=' +
+    encodeURIComponent('"' + folderName + '" type:folder') +
+    '&authuser=' + encodeURIComponent(DRIVE_ACCOUNT);
+}
+
+// ─── HELPERS ───
+function pctColor(v) { return v>=80?'var(--green)':v>=70?'var(--blue)':v>=60?'var(--amber)':'var(--red)'; }
+function gradeClass(g) { const x=(g==='A*'?'astar':g.toLowerCase()); return x; }
+function fmtDate(iso) { const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}); }
+function gradeFromPct(p){if(p>=90)return'A*';if(p>=80)return'A';if(p>=70)return'B';if(p>=60)return'C';if(p>=50)return'D';if(p>=40)return'E';return'U';}
+function daysAgo(iso){const d=new Date(iso+'T00:00:00');return Math.floor((Date.now()-d.getTime())/86400000);}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
+  if(name==='as-prof' || name==='as-assess'){ renderLevel('AS'); }
+  if(name==='a-prof'  || name==='a-assess' ){ renderLevel('A');  }
+  if(name==='as-assess'){ initTimeline('AS'); }
+  if(name==='a-assess' ){ initTimeline('A');  }
+  if(name==='recent'){ renderRecentFull(); }
+  window.scrollTo({top:0,behavior:'instant'});
+}
+document.querySelectorAll('.nav-btn[data-view]').forEach(b=>{
+  b.addEventListener('click', ()=> switchView(b.dataset.view));
+});
+
+// ═══════════════════════════════════════════════
+// SUBJECT FILTER — for AS/A Assessment tables
+// ═══════════════════════════════════════════════
+const assessSubjFilter = {AS:'all', A:'all'};
+
+function renderAssessmentTable(levelKey, A, S){
+  const tbody = document.getElementById(levelKey+'-t1-results');
+  if(!tbody) return;
+  const filter = assessSubjFilter[levelKey] || 'all';
+  const rows = filter === 'all' ? A : A.filter(a => a.subject === filter);
+  tbody.innerHTML = rows.map(a => {
+    const sub = S[a.subject] || {shortName:a.subject, badgeClass:'badge-biz'};
+    const flags = (a.flags||[]).map(f=>' <span class="flag flag-'+f.type+'">'+f.text+'</span>').join('');
+    const barCol = a.percentage>=90 ? 'var(--purple)' : pctColor(a.percentage);
+    return '<tr>'+
+      '<td>'+fmtDate(a.date)+'</td>'+
+      '<td><span class="badge '+sub.badgeClass+'">'+sub.shortName+'</span></td>'+
+      '<td>'+a.name+flags+renderFileRefs(a)+'</td>'+
+      '<td>'+a.type+'</td>'+
+      '<td>'+a.earned+'/'+a.total+'</td>'+
+      '<td>'+a.percentage+'%</td>'+
+      '<td><div class="bar-bg"><div class="bar-fill" style="width:'+a.percentage+'%;background:'+barCol+'"></div></div></td>'+
+      '<td><span class="tag tag-'+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
+  }).join('');
+}
+
+// Wire up subject filter chips for AS / A Assessment tables.
+document.querySelectorAll('.filter-bar[data-level] button[data-subfilter]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const bar = b.closest('.filter-bar');
+    const lvl = bar.dataset.level;
+    bar.querySelectorAll('button[data-subfilter]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    assessSubjFilter[lvl] = b.dataset.subfilter;
+    const DATA = ALL[lvl];
+    if(DATA) renderAssessmentTable(lvl, DATA.assessments, DATA.subjects);
+  });
+});
+
+// ═══════════════════════════════════════════════
+// LANDING PAGE
+// ═══════════════════════════════════════════════
+
+// Compute proficiency + coverage + grade for a single (level, subject) pair.
+function levelSubjectStats(levelKey, subjKey){
+  const DATA = ALL[levelKey];
+  if(!DATA) return null;
+  const topics = (DATA.topicScores || {})[subjKey] || [];
+  const assess = (DATA.assessments || []).filter(a => a.subject === subjKey);
+  // Proficiency blended %
+  const sum = topics.reduce((acc, t)=> t.s===null ? acc : acc + Math.min(t.s/GOAL, 1.0), 0);
+  const blended = topics.length ? (sum / topics.length) * 100 : 0;
+  // Coverage
+  const covered = topics.filter(t=>t.s!==null).length;
+  // Grade — from sum(earned)/sum(total) on assessments in scope
+  const e = assess.reduce((s,a)=>s+a.earned, 0);
+  const t = assess.reduce((s,a)=>s+a.total, 0);
+  const pct = t ? (e/t*100) : 0;
+  const grade = assess.length ? gradeFromPct(pct) : '—';
+  return {
+    blended, coveredCount: covered, totalCount: topics.length,
+    grade, pct: t ? +pct.toFixed(1) : 0,
+    assessCount: assess.length,
+  };
+}
+
+function levelSubjectDelta(levelKey, subjKey){
+  // Compare avg % from last 7 days vs everything older.
+  const DATA = ALL[levelKey];
+  if(!DATA) return null;
+  const assess = (DATA.assessments||[]).filter(a=>a.subject===subjKey);
+  const recent = assess.filter(a=>daysAgo(a.dateEvaluated||a.date||"")<=7);
+  const prior  = assess.filter(a=>daysAgo(a.dateEvaluated||a.date||"")>7);
+  if(!recent.length || !prior.length) return null;
+  const avg = arr => arr.reduce((s,a)=>s+a.percentage,0)/arr.length;
+  const d = +(avg(recent)-avg(prior)).toFixed(1);
+  return {d, cls:d>0?"up":d<0?"dn":"flat", label:(d>0?"+":"")+d+"%"};
+}
+
+function renderHomeSubjects(levelKey, containerId){
+  const DATA = ALL[levelKey];
+  const container = document.getElementById(containerId);
+  if(!DATA || !container) return;
+  const subjects = DATA.subjects || {};
+  const subjectKeys = ['psychology','business','it'].filter(k => k in subjects);
+  const targetView = levelKey === 'AS' ? 'as-prof' : 'a-prof';
+  // Destroy any existing sparkline charts before clearing DOM
+  subjectKeys.forEach(key => {
+    const ck = '_sparkline_'+levelKey+'_'+key;
+    if(window[ck]){ window[ck].destroy(); window[ck]=null; }
+  });
+  container.innerHTML = subjectKeys.map(key => {
+    const sub = subjects[key];
+    const st  = levelSubjectStats(levelKey, key);
+    const dt  = levelSubjectDelta(levelKey, key);
+    let cardHtml;
+    if(!st || st.assessCount === 0){
+      cardHtml =
+        '<div class="subj-card subj-card-empty" style="border-left-color:var(--'+sub.color+')">'+
+        '<div class="sc-title" style="color:var(--'+sub.color+')">'+sub.shortName+' '+sub.code+'</div>'+
+        '<div class="sc-value">No assessments yet</div>'+
+        '</div>';
+    } else {
+      const gradeColor = pctColor(st.pct);
+      const profColor  = pctColor(st.blended);
+      cardHtml =
+        '<div class="subj-card" style="border-left-color:var(--'+sub.color+')" onclick="switchView(\''+targetView+'\')">'+
+        '<div class="sc-title" style="color:var(--'+sub.color+')">'+sub.shortName+' '+sub.code+'</div>'+
+        '<div class="sc-row"><div class="sc-label">Proficiency</div>'+
+          '<div><span class="sc-value" style="color:'+profColor+'">'+st.blended.toFixed(0)+'%</span>'+
+          '<span class="sc-sub">'+st.coveredCount+'/'+st.totalCount+' topics</span></div></div>'+
+        '<div class="sc-row"><div class="sc-label">Grade</div>'+
+          '<div><span class="sc-value tag tag-'+gradeClass(st.grade)+'" style="padding:3px 12px;font-size:16px">'+st.grade+'</span>'+
+          '<span class="sc-sub">'+st.pct.toFixed(0)+'% &middot; '+st.assessCount+'</span>'+
+          (dt ? '<span class="sc-delta '+dt.cls+'">'+dt.label+'</span>' : '')+
+        '</div></div>'+
+        '</div>';
+    }
+    const sparkId = 'home-sparkline-'+levelKey+'-'+key;
+    const chartDiv = (st && st.assessCount > 0)
+      ? '<div style="position:relative;height:110px;margin-top:6px;background:#0d1117;border-radius:8px;"><canvas id="'+sparkId+'"></canvas></div>'
+      : '';
+    return '<div style="display:flex;flex-direction:column;">'+cardHtml+chartDiv+'</div>';
+  }).join('');
+}
+
+function renderSubjectSparklines(levelKey){
+  var DATA = ALL[levelKey];
+  if(!DATA) return;
+  var colorMap = {psychology:'#22c55e', business:'#a855f7', it:'#3b82f6'};
+
+  function gradeVal(g){
+    return g==='A*'?7:g==='A'?6:g==='B'?5:g==='C'?4:g==='D'?3:g==='E'?2:1;
+  }
+
+  ['psychology','business','it'].forEach(function(subjKey){
+    var canvasId = 'home-sparkline-'+levelKey+'-'+subjKey;
+    var canvas   = document.getElementById(canvasId);
+    if(!canvas) return;
+    var chartKey = '_sparkline_'+levelKey+'_'+subjKey;
+    if(window[chartKey]){ window[chartKey].destroy(); window[chartKey]=null; }
+
+    var assess = (DATA.assessments||[]).filter(function(a){return a.subject===subjKey;});
+    if(!assess.length) return;
+
+    var sorted = assess.slice().sort(function(a,b){
+      var da = a.dateEvaluated||a.date||'';
+      var db = b.dateEvaluated||b.date||'';
+      return da.localeCompare(db);
+    });
+
+    // Cumulative weighted average — each point = what the card would show at that moment
+    var cumEarned = 0, cumTotal = 0;
+    var labels = [], avgLine = [];
+    sorted.forEach(function(a){
+      cumEarned += (a.earned||0);
+      cumTotal  += (a.total||0);
+      var date = a.dateEvaluated||a.date||'';
+      var pct  = cumTotal ? +(cumEarned/cumTotal*100).toFixed(1) : 0;
+      labels.push(date
+        ? new Date(date+'T00:00:00').toLocaleDateString('en-GB',{month:'short',day:'numeric'})
+        : '');
+      avgLine.push(pct);
+    });
+
+    var color = colorMap[subjKey]||'#6b7280';
+
+    // Grade-boundary guide lines
+    var annotations = {
+      b90:{type:'line',yMin:90,yMax:90,borderColor:'#ffffff10',borderWidth:1,borderDash:[2,4],
+        label:{content:'A*',display:true,position:'end',color:'#6b728077',font:{size:8},backgroundColor:'transparent',padding:1}},
+      b80:{type:'line',yMin:80,yMax:80,borderColor:'#ffffff10',borderWidth:1,borderDash:[2,4],
+        label:{content:'A', display:true,position:'end',color:'#6b728077',font:{size:8},backgroundColor:'transparent',padding:1}},
+      b70:{type:'line',yMin:70,yMax:70,borderColor:'#ffffff10',borderWidth:1,borderDash:[2,4],
+        label:{content:'B', display:true,position:'end',color:'#6b728077',font:{size:8},backgroundColor:'transparent',padding:1}},
+      b60:{type:'line',yMin:60,yMax:60,borderColor:'#ffffff10',borderWidth:1,borderDash:[2,4],
+        label:{content:'C', display:true,position:'end',color:'#6b728077',font:{size:8},backgroundColor:'transparent',padding:1}},
+      b50:{type:'line',yMin:50,yMax:50,borderColor:'#ffffff10',borderWidth:1,borderDash:[2,4],
+        label:{content:'D', display:true,position:'end',color:'#6b728077',font:{size:8},backgroundColor:'transparent',padding:1}},
+    };
+
+    // Grade-change markers: vertical line + label wherever the cumulative grade shifts
+    var prevGrade = '';
+    avgLine.forEach(function(pct, i){
+      var g = gradeFromPct(pct);
+      if(prevGrade && g !== prevGrade){
+        var isUp = gradeVal(g) > gradeVal(prevGrade);
+        var col  = isUp ? '#22c55e' : '#ef4444';
+        annotations['gc'+i] = {
+          type: 'line',
+          xMin: i, xMax: i,
+          borderColor: col+'88',
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          label: {
+            content: prevGrade + ' → ' + g,
+            display: true,
+            position: 'start',
+            color: col,
+            font: {size: 9, weight: '700'},
+            backgroundColor: '#0d1117dd',
+            padding: {x: 4, y: 2}
+          }
+        };
+      }
+      prevGrade = g;
+    });
+
+    window[chartKey] = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Grade avg',
+          data: avgLine,
+          borderColor: color,
+          backgroundColor: color+'18',
+          fill: true,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          borderWidth: 2,
+          tension: 0.3,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {min:0, max:100, ticks:{display:false}, grid:{color:'#2a2d3a'}, border:{display:false}},
+          x: {ticks:{color:'#6b7280',font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:5},
+              grid:{display:false}, border:{display:false}}
+        },
+        plugins: {
+          legend: {display:false},
+          tooltip: {
+            callbacks: {label: function(c){ return 'Avg: '+c.parsed.y+'% ('+gradeFromPct(c.parsed.y)+')'; }}
+          },
+          annotation: {annotations: annotations}
+        }
+      }
+    });
+  });
+}
+
+
+function renderHome(){
+  renderHomeSubjects('AS', 'home-as-subjects');
+  renderHomeSubjects('A',  'home-a-subjects');
+  renderSubjectSparklines('AS');
+  renderSubjectSparklines('A');
+
+  document.getElementById('nav-meta').textContent = ALL.meta.totalCount + ' assessments • Updated ' + ALL.meta.lastUpdated;
+
+  var todays = ALL.recent.filter(function(r){return daysAgo(r.dateEvaluated||r.dateAnswered||r.date)===0;});
+  var top = todays.length > 0 ? todays : ALL.recent.slice(0,8);
+  var titleEl = document.getElementById('home-recent-title');
+  if(titleEl){
+    titleEl.textContent = todays.length > 0
+      ? 'Recently Evaluated — Today (' + todays.length + ')'
+      : 'Recently Evaluated — Latest';
+  }
+  renderRecentRows(document.getElementById('home-recent'), top);
+  var totalUnique = ALL.meta.uniqueCount || ALL.recent.length;
+  document.getElementById('home-footer').textContent =
+    'Combined dashboard • ' + totalUnique + ' unique evaluations (' +
+    ALL.meta.asCount + ' AS + ' + ALL.meta.aCount + ' A routed) • Last updated ' +
+    ALL.meta.lastUpdated;
+
+  var newCount = ALL.recent.filter(function(r){return daysAgo(r.dateEvaluated||r.dateAnswered||r.date)<=7;}).length;
+  if(newCount > 0){
+    var b = document.getElementById('new-count');
+    if(b){ b.style.display = 'inline-block'; b.textContent = newCount + ' NEW'; }
+  }
+}
+
+function escapeAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+
+function renderFileRefs(a){
+  if(!a.folder && !a.markedFile) return '';
+  const f = a.folder
+    ? '<div class="file-ref"><span class="ref-label">Folder</span>'+
+        '<a class="ref-val ref-link" href="'+escapeAttr(driveFolderUrl(a.folder))+'" target="_blank" rel="noopener" '+
+          'title="Open folder in Google Drive" '+
+          'onclick="event.stopPropagation()">'+escapeAttr(a.folder)+
+          ' <span class="ref-arrow">↗</span>'+
+        '</a>'+
+      '</div>'
+    : '';
+  const m = a.markedFile
+    ? '<div class="file-ref"><span class="ref-label">File</span><code class="ref-val">'+escapeAttr(a.markedFile)+'</code></div>'
+    : '';
+  return '<div class="file-refs">'+f+m+'</div>';
+}
+
+function renderRecentRows(container, rows){
+  if(!rows.length){
+    container.innerHTML = '<div class="recent-empty">No recent evaluations yet.</div>';
+    return;
+  }
+  container.innerHTML = rows.map(a => {
+    // Subject lookup: when level is AS/A, prefer AS metadata; both define same shortName/badgeClass.
+    const subjMap = (a.level==='A' ? ALL.A.subjects : ALL.AS.subjects);
+    const sub = subjMap[a.subject] || (ALL.A.subjects[a.subject]) || {shortName:a.subject, badgeClass:'badge-biz'};
+    const evalDate = a.dateEvaluated || a.dateAnswered || a.date;
+    const ansDate  = a.dateAnswered  || a.date;
+    const age = daysAgo(evalDate);
+    const isNew = age <= 7;
+    const lvlClass = a.level==='AS' ? 'badge-level-as' : a.level==='A' ? 'badge-level-a' : 'badge-level-both';
+    const newPill = isNew ? '<span class="new-pill">NEW</span>' : '';
+    const ageStr = age===0 ? ' (today)' : age===1 ? ' (yesterday)' : ' ('+age+'d ago)';
+    const ansLine = (ansDate && ansDate !== evalDate)
+      ? '<div class="r-date-sub"><span class="r-lbl">Answered </span>'+fmtDate(ansDate)+'</div>'
+      : '<div class="r-date-sub"><span class="r-lbl">Answered </span>'+fmtDate(ansDate)+'</div>';
+    return '<div class="recent-row '+(isNew?'new':'')+'" title="'+escapeAttr(a.name)+'">'+
+      '<div class="r-date">'+
+        '<div class="r-date-main">'+fmtDate(evalDate)+ageStr+'</div>'+
+        ansLine+
+      '</div>'+
+      '<div class="r-level"><span class="badge '+lvlClass+'">'+a.level+'</span></div>'+
+      '<div class="r-name"><span class="badge '+sub.badgeClass+'" style="margin-right:8px">'+sub.shortName+'</span>'+a.name+newPill+renderFileRefs(a)+'</div>'+
+      '<div class="r-pct" style="color:'+pctColor(a.percentage)+'">'+a.percentage+'%</div>'+
+      '<div class="r-marks">'+a.earned+'/'+a.total+'</div>'+
+      '<div class="r-grade"><span class="tag tag-'+gradeClass(a.grade)+'">'+a.grade+'</span></div>'+
+      '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// RECENTLY EVALUATED (full view)
+// ═══════════════════════════════════════════════
+let recentFilter = {level:'all', subject:'all'};
+function applyRecentFilter(){
+  let rows = ALL.recent;
+  if(recentFilter.level !== 'all'){
+    // Include cross-level "AS/A" assessments under either filter
+    rows = rows.filter(r => r.level === recentFilter.level || r.level === 'AS/A');
+  }
+  if(recentFilter.subject !== 'all') rows = rows.filter(r => r.subject === recentFilter.subject);
+  renderRecentRows(document.getElementById('recent-list'), rows);
+  const totalUnique = ALL.meta.uniqueCount || ALL.recent.length;
+  document.getElementById('recent-subtitle').textContent = rows.length + ' assessment(s) shown \u2022 Sorted by evaluation date (newest first) \u2022 Updated ' + ALL.meta.lastUpdated;
+  document.getElementById('recent-footer').textContent = 'Showing ' + rows.length + ' of ' + totalUnique + ' unique evaluations.';
+}
+function renderRecentFull(){ applyRecentFilter(); }
+document.querySelectorAll('#view-recent .filter-bar button[data-filter]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#view-recent .filter-bar button[data-filter]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    recentFilter.level = b.dataset.filter;
+    applyRecentFilter();
+  });
+});
+document.querySelectorAll('#view-recent .filter-bar button[data-subfilter]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#view-recent .filter-bar button[data-subfilter]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    recentFilter.subject = b.dataset.subfilter;
+    applyRecentFilter();
+  });
+});
+
+// ═══════════════════════════════════════════════
+// LEVEL DASHBOARD (AS or A)
+// ═══════════════════════════════════════════════
+const rendered = {AS:false, A:false};
+const tlInit = {AS:false, A:false};
+
+function renderLevel(levelKey){
+  if(rendered[levelKey]) return;
+  rendered[levelKey] = true;
+  const DATA = ALL[levelKey];
+  const A = DATA.assessments;
+  const S = DATA.subjects;
+  const T = DATA.topicScores;
+  const subjectKeys = Object.keys(S);
+  const totalEarned = A.reduce((s,a)=>s+a.earned, 0);
+  const totalTotal  = A.reduce((s,a)=>s+a.total, 0);
+  const overallPct  = totalTotal ? +(totalEarned/totalTotal*100).toFixed(1) : 0;
+  const best = A.length ? A.reduce((b,a)=>a.percentage>b.percentage?a:b) : null;
+  const allGrades = {};
+  A.forEach(a=>{ allGrades[a.grade]=(allGrades[a.grade]||0)+1; });
+  const uniqueDates = [...new Set(A.map(a=>a.date))].sort();
+  const daySpan = uniqueDates.length ? Math.round((new Date(uniqueDates[uniqueDates.length-1])-new Date(uniqueDates[0]))/(86400000))+1 : 0;
+  function subjectStats(key){
+    const sa = A.filter(a=>a.subject===key);
+    const e = sa.reduce((s,a)=>s+a.earned,0);
+    const t = sa.reduce((s,a)=>s+a.total,0);
+    const grades = {};
+    sa.forEach(a=>{ grades[a.grade]=(grades[a.grade]||0)+1; });
+    return { count:sa.length, earned:e, total:t, pct: t? +(e/t*100).toFixed(1):0, grades };
+  }
+  const P = levelKey + '-';   // prefix for DOM ids
+
+  // ─── TAB 1: Assessment Overview ───
+  document.getElementById(P+'t1-subtitle').innerHTML = A.length+' assessments across '+subjectKeys.length+' subjects &bull; '+DATA.meta.dateRange;
+  const avgEl = document.getElementById(P+'t1-avg');
+  avgEl.textContent = overallPct+'%';
+  avgEl.style.color = pctColor(overallPct);
+  document.getElementById(P+'t1-marks').textContent = totalEarned+' / '+totalTotal+' marks';
+  document.getElementById(P+'t1-count').textContent = A.length;
+  document.getElementById(P+'t1-count-detail').textContent = subjectKeys.length+' subjects over '+daySpan+' days';
+  if(best){
+    document.getElementById(P+'t1-best-pct').textContent = best.percentage+'%';
+    document.getElementById(P+'t1-best-detail').innerHTML = S[best.subject].shortName+' '+best.name+' <span class="tag tag-'+gradeClass(best.grade)+'">'+best.grade+'</span>'+renderFileRefs(best);
+  }
+  const gOrder = ['A*','A','B','C','D','E','U'];
+  document.getElementById(P+'t1-grades').innerHTML = gOrder.filter(g=>allGrades[g]).map(g =>
+    '<span class="tag tag-'+gradeClass(g)+'">'+g+' &times; '+allGrades[g]+'</span>'
+  ).join('');
+
+  const scContainer = document.getElementById(P+'t1-subject-cards');
+  scContainer.innerHTML = '';
+  subjectKeys.forEach(key=>{
+    const sub = S[key];
+    const st = subjectStats(key);
+    const gTags = gOrder.filter(g=>st.grades[g]).map(g =>
+      '<span class="tag tag-'+gradeClass(g)+'">'+g+' &times; '+st.grades[g]+'</span>'
+    ).join(' ');
+    scContainer.innerHTML += '<div class="card" style="border-left:3px solid var(--'+sub.color+')">'+
+      '<h3>'+sub.shortName+' '+sub.code+'</h3>'+
+      '<div class="big-num" style="color:var(--'+sub.color+')">'+st.pct+'%</div>'+
+      '<div style="color:var(--muted);font-size:13px;margin-top:4px">'+st.earned+' / '+st.total+' marks &bull; '+st.count+' assessments</div>'+
+      '<div style="margin-top:8px">'+gTags+'</div></div>';
+  });
+  const mkLi = (arr, cls)=> (arr||[]).map(t=>'<li class="'+cls+'">'+t+'</li>').join('');
+  document.getElementById(P+'t1-strengths').innerHTML = mkLi(DATA.insights.strengths, 'li-g');
+  document.getElementById(P+'t1-improvements').innerHTML = mkLi(DATA.insights.improvements, 'li-r');
+
+  const aoNames = {AO1:'AO1 \u2014 Knowledge', AO2:'AO2 \u2014 Application', AO3:'AO3 \u2014 Analysis', AO4:'AO4 \u2014 Evaluation'};
+  const aoContainer = document.getElementById(P+'t1-ao');
+  aoContainer.innerHTML = '';
+  Object.entries(DATA.aoTotals||{}).forEach(([k,v])=>{
+    const pct = v.total ? Math.round(v.earned/v.total*100) : 0;
+    aoContainer.innerHTML += '<div style="text-align:center">'+
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600">'+aoNames[k]+'</div>'+
+      '<div style="font-size:32px;font-weight:700;color:'+pctColor(pct)+'">'+pct+'%</div>'+
+      '<div style="font-size:12px;color:var(--muted)">'+v.earned+' / '+v.total+' marks</div>'+
+      '<div style="margin-top:8px"><div class="bar-bg"><div class="bar-fill" style="width:'+pct+'%;background:'+pctColor(pct)+'"></div></div></div></div>';
+  });
+  document.getElementById(P+'t1-ao-note').textContent = DATA.aoNote || '';
+
+  const tbody = document.getElementById(P+'t1-results');
+  tbody.innerHTML = '';
+  A.forEach(a=>{
+    const sub = S[a.subject];
+    const flags = (a.flags||[]).map(f=>' <span class="flag flag-'+f.type+'">'+f.text+'</span>').join('');
+    const barCol = a.percentage>=90 ? 'var(--purple)' : pctColor(a.percentage);
+    tbody.innerHTML += '<tr>'+
+      '<td>'+fmtDate(a.date)+'</td>'+
+      '<td><span class="badge '+sub.badgeClass+'">'+sub.shortName+'</span></td>'+
+      '<td>'+a.name+flags+renderFileRefs(a)+'</td>'+
+      '<td>'+a.type+'</td>'+
+      '<td>'+a.earned+'/'+a.total+'</td>'+
+      '<td>'+a.percentage+'%</td>'+
+      '<td><div class="bar-bg"><div class="bar-fill" style="width:'+a.percentage+'%;background:'+barCol+'"></div></div></td>'+
+      '<td><span class="tag tag-'+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
+  });
+  document.getElementById(P+'t1-footer').textContent = 'Generated from '+A.length+' Marked.json files \u2022 Dashboard built '+DATA.meta.lastUpdated;
+
+  // ─── TAB 2: Proficiency Report ───
+  document.getElementById(P+'t2-subtitle').innerHTML = 'Topic-level proficiency across all '+A.length+' assessments &bull; '+DATA.meta.dateRange;
+  function blended(arr){
+    if(!arr.length) return 0;
+    const sum = arr.reduce((acc,c)=> c.s===null ? acc : acc+Math.min(c.s/GOAL,1.0), 0);
+    return (sum/arr.length)*100;
+  }
+  const blendedBySubject = {};
+  subjectKeys.forEach(key=>{ blendedBySubject[key] = blended(T[key]); });
+  const totalTopics = subjectKeys.reduce((s,k)=>s+T[k].length, 0);
+  const overallBlended = totalTopics ? subjectKeys.reduce((s,k)=>s+blendedBySubject[k]*T[k].length, 0) / totalTopics : 0;
+  document.getElementById(P+'t2-blended').textContent = overallBlended.toFixed(1)+'%';
+
+  let allScored = [];
+  subjectKeys.forEach(key=>{ T[key].forEach(t=>{ if(t.s!==null) allScored.push({n:t.n, s:t.s, subj:key}); }); });
+  if(allScored.length){
+    const strongest = allScored.reduce((b,t)=> t.s>b.s?t:b);
+    const weakest   = allScored.reduce((b,t)=> t.s<b.s?t:b);
+    document.getElementById(P+'t2-strongest-pct').textContent = strongest.s+'%';
+    document.getElementById(P+'t2-strongest-name').textContent = S[strongest.subj].shortName+' \u2014 '+strongest.n;
+    document.getElementById(P+'t2-weakest-pct').textContent = weakest.s+'%';
+    document.getElementById(P+'t2-weakest-name').textContent = S[weakest.subj].shortName+' \u2014 '+weakest.n;
+  }
+  const below85 = allScored.filter(t=>t.s<GOAL).length;
+  document.getElementById(P+'t2-below85').textContent = below85;
+  document.getElementById(P+'t2-below85-detail').textContent = 'of '+allScored.length+' assessed topics';
+
+  const pieRow = document.getElementById(P+'t2-pie-row');
+  pieRow.innerHTML = '';
+  subjectKeys.forEach(key=>{
+    const sub = S[key];
+    pieRow.innerHTML += '<div class="card" style="text-align:center;border-left:3px solid var(--'+sub.color+')">'+
+      '<h3 style="margin-bottom:12px">'+sub.shortName+' '+sub.code+'</h3>'+
+      '<div style="position:relative;height:200px"><canvas id="'+P+'pie-'+key+'"></canvas></div></div>';
+  });
+  function pieStats(arr){ let m=0,p=0,n=0; arr.forEach(c=>{ if(c.s===null) n++; else if(c.s>=GOAL) m++; else p++; }); return [m,p,n]; }
+  subjectKeys.forEach(key=>{
+    new Chart(document.getElementById(P+'pie-'+key).getContext('2d'),{
+      type:'doughnut',
+      data:{ labels:['Mastered (\u226585%)','In Progress (<85%)','Not Assessed'],
+        datasets:[{data:pieStats(T[key]),backgroundColor:['#22c55ecc','#f59e0bcc','#2a2d3a'],borderColor:['#22c55e','#f59e0b','#3a3d4a'],borderWidth:1,hoverOffset:6}] },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{
+        legend:{position:'bottom',labels:{color:'#e4e4e7',usePointStyle:true,pointStyle:'circle',padding:10,font:{size:11}}},
+        tooltip:{callbacks:{label:function(ctx){const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);return ctx.label+': '+ctx.parsed+' ('+((ctx.parsed/tot)*100).toFixed(0)+'%)';}}}
+      }}
+    });
+  });
+
+  const gridsContainer = document.getElementById(P+'t2-subject-grids');
+  gridsContainer.innerHTML = '';
+  subjectKeys.forEach(key=>{
+    const sub = S[key];
+    const topics = T[key];
+    const covered = topics.filter(t=>t.s!==null).length;
+    const scored  = topics.filter(t=>t.s!==null);
+    const avgScore = scored.length ? +(scored.reduce((s,t)=>s+t.s,0)/scored.length).toFixed(1) : 0;
+    const avgColor = avgScore>=80?'var(--green)':avgScore>=70?'var(--blue)':avgScore>=60?'var(--amber)':'var(--red)';
+    const bl = blendedBySubject[key];
+    let html = '<div class="card" style="margin-bottom:24px;border-left:3px solid var(--'+sub.color+')">'+
+      '<div class="subj-hdr"><div class="subj-hdr-left">'+
+      '<div class="subj-title" style="color:var(--'+sub.color+')">'+sub.shortName+' '+sub.code+' <span style="font-size:11px;font-weight:400;color:var(--muted)">('+sub.scope+')</span></div>'+
+      '<div class="subj-meta">'+covered+' of '+topics.length+' topics covered &bull; Avg score: <strong style="color:'+avgColor+'">'+avgScore+'%</strong></div>'+
+      '</div><div class="subj-pct" style="color:var(--'+sub.color+')">'+bl.toFixed(1)+'%</div></div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Blended progress toward 85% goal</div>'+
+      '<div class="bar-bg" style="height:6px;margin-bottom:16px"><div class="bar-fill" style="width:'+bl.toFixed(1)+'%;background:var(--'+sub.color+');height:6px"></div></div>'+
+      '<div class="ch-grid">';
+    topics.forEach(t=>{
+      if(t.s!==null){
+        const c = t.s>=80?{bg:'#22c55e18',bd:'#22c55e44',tx:'var(--green)'}
+                 :t.s>=70?{bg:'#3b82f618',bd:'#3b82f644',tx:'var(--blue)'}
+                 :t.s>=60?{bg:'#f59e0b18',bd:'#f59e0b44',tx:'var(--amber)'}
+                 :{bg:'#ef444418',bd:'#ef444444',tx:'var(--red)'};
+        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+'"><div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div><div class="ch-name" style="color:var(--text)">'+t.n+'</div></div>';
+      } else {
+        html += '<div class="ch-box ch-box-blank"><div class="ch-name">'+t.n+'</div></div>';
+      }
+    });
+    html += '</div></div>';
+    gridsContainer.innerHTML += html;
+  });
+
+  document.getElementById(P+'t2-ch-strengths').innerHTML = (DATA.insights.chapterStrengths||[]).map(i =>
+    '<li class="li-g"><strong>'+i.topic+' ('+i.pct+'%)</strong> \u2014 '+i.note+'</li>'
+  ).join('');
+  document.getElementById(P+'t2-ch-weaknesses').innerHTML = (DATA.insights.chapterWeaknesses||[]).map(i =>
+    '<li class="'+(i.pct<60?'li-r':'li-a')+'"><strong>'+i.topic+' ('+i.pct+'%)</strong> \u2014 '+i.note+'</li>'
+  ).join('');
+  document.getElementById(P+'t2-footer').textContent = 'Compiled from question-level data in '+A.length+' Marked.json files \u2022 '+DATA.meta.lastUpdated;
+}
+
+function initTimeline(levelKey){
+  if(tlInit[levelKey]) return;
+  tlInit[levelKey] = true;
+  const DATA = ALL[levelKey];
+  const A = DATA.assessments;
+  const S = DATA.subjects;
+  const subjectKeys = Object.keys(S);
+  const chrono = [...A].reverse();
+  const labels = chrono.map(a=>fmtDate(a.date));
+  const colors = {psychology:'#a855f7',business:'#3b82f6',it:'#06b6d4'};
+  const datasets = subjectKeys.map(key=>({
+    label: S[key].shortName,
+    data: chrono.map(a => a.subject===key ? a.percentage : null),
+    borderColor: colors[key],
+    backgroundColor: colors[key]+'22',
+    pointBackgroundColor: colors[key],
+    pointRadius:6, spanGaps:true, tension:.3, borderWidth:2
+  }));
+  const gradeThresholds = [
+    {val:90,label:'A*',color:'#a855f7'},{val:80,label:'A',color:'#22c55e'},
+    {val:70,label:'B',color:'#3b82f6'},{val:60,label:'C',color:'#06b6d4'},
+    {val:50,label:'D',color:'#f59e0b'},{val:40,label:'E',color:'#ef4444'}
+  ];
+  const gradeAnnotations = {};
+  gradeThresholds.forEach((g,i)=>{
+    gradeAnnotations['grade'+i] = {
+      type:'line',drawTime:'beforeDatasetsDraw',yMin:g.val,yMax:g.val,
+      borderColor:g.color+'55',borderWidth:1,borderDash:[4,4],
+      label:{display:true,content:g.label,position:'start',backgroundColor:g.color+'22',
+        color:g.color,font:{size:11,weight:'bold'},padding:{top:2,bottom:2,left:4,right:4}}
+    };
+  });
+  const ctx = document.getElementById(levelKey+'-timelineChart');
+  if(!ctx) return;
+  new Chart(ctx.getContext('2d'),{
+    type:'line',
+    data:{labels:labels, datasets:datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        y:{min:30,max:100,ticks:{color:'#9ca3af',callback:v=>v+'%',stepSize:10},grid:{color:'#2a2d3a'}},
+        x:{ticks:{color:'#9ca3af'},grid:{color:'#2a2d3a'}}
+      },
+      plugins:{
+        legend:{labels:{color:'#e4e4e7',usePointStyle:true,pointStyle:'circle',padding:16}},
+        tooltip:{callbacks:{label:c=>{const pct=c.parsed.y;return c.dataset.label+': '+pct+'% ('+gradeFromPct(pct)+')';}}},
+        annotation:{annotations:gradeAnnotations}
+      }
+    }
+  });
+}
+
+// ═══ INIT ═══
+renderHome();
+</script>
+</body>
+</html>
