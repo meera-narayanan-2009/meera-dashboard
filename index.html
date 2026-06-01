@@ -3587,12 +3587,12 @@ function renderHome(){
   document.getElementById('nav-meta').textContent = ALL.meta.totalCount + ' assessments • Updated ' + ALL.meta.lastUpdated;
 
   var todays = ALL.recent.filter(function(r){return daysAgo(r.dateEvaluated||r.dateAnswered||r.date)===0;});
-  var top = todays.length > 0 ? todays : ALL.recent.slice(0,15);
+  var top = ALL.recent.slice(0,15);
   var titleEl = document.getElementById('home-recent-title');
   if(titleEl){
     titleEl.textContent = todays.length > 0
-      ? 'Recently Evaluated — Today (' + todays.length + ')'
-      : 'Recently Evaluated — Latest';
+      ? 'Recently Evaluated — Latest 15 (' + todays.length + ' today)'
+      : 'Recently Evaluated — Latest 15';
   }
   renderRecentRows(document.getElementById('home-recent'), top);
   var totalUnique = ALL.meta.uniqueCount || ALL.recent.length;
