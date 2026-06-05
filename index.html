@@ -8853,13 +8853,12 @@ function renderLevel(levelKey){
   document.getElementById(P+'t2-below85-detail').textContent = 'of '+allScored.length+' assessed topics';
 
   const pieRow = document.getElementById(P+'t2-pie-row');
-  pieRow.innerHTML = '';
-  subjectKeys.forEach(key=>{
+  pieRow.innerHTML = subjectKeys.map(key=>{
     const sub = S[key];
-    pieRow.innerHTML += '<div class="card" style="text-align:center;border-left:3px solid var(--'+sub.color+')">'+
-      '<h3 style="margin-bottom:12px">'+sub.shortName+' '+sub.code+'</h3>'+
+    return '<div class="card" style="text-align:center;border-left:3px solid var(--'+sub.color+')">'+
+      '<h3 style="margin-bottom:12px">'+escHtml(sub.shortName)+' '+escHtml(sub.code)+'</h3>'+
       '<div style="position:relative;height:200px"><canvas id="'+P+'pie-'+key+'"></canvas></div></div>';
-  });
+  }).join('');
   function pieStats(arr){ let m=0,p=0,n=0; arr.forEach(c=>{ if(c.s===null) n++; else if(c.s>=GOAL) m++; else p++; }); return [m,p,n]; }
   subjectKeys.forEach(key=>{
     new Chart(document.getElementById(P+'pie-'+key).getContext('2d'),{
