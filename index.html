@@ -8874,37 +8874,39 @@ function renderLevel(levelKey){
   });
 
   const gridsContainer = document.getElementById(P+'t2-subject-grids');
-  gridsContainer.innerHTML = '';
+  const gridParts = [];
   subjectKeys.forEach(key=>{
     const sub = S[key];
-    const topics = T[key];
+    const topics = (T[key] || []);
     const covered = topics.filter(t=>t.s!==null).length;
     const scored  = topics.filter(t=>t.s!==null);
     const avgScore = scored.length ? +(scored.reduce((s,t)=>s+t.s,0)/scored.length).toFixed(1) : 0;
     const avgColor = avgScore>=80?'var(--green)':avgScore>=70?'var(--blue)':avgScore>=60?'var(--amber)':'var(--red)';
-    const bl = blendedBySubject[key];
+    const bl = blendedBySubject[key] || 0;
     let html = '<div class="card" style="margin-bottom:24px;border-left:3px solid var(--'+sub.color+')">'+
       '<div class="subj-hdr"><div class="subj-hdr-left">'+
-      '<div class="subj-title" style="color:var(--'+sub.color+')">'+sub.shortName+' '+sub.code+' <span style="font-size:11px;font-weight:400;color:var(--muted)">('+sub.scope+')</span></div>'+
+      '<div class="subj-title" style="color:var(--'+sub.color+')">'+escHtml(sub.shortName)+' '+escHtml(sub.code)+' <span style="font-size:11px;font-weight:400;color:var(--muted)">('+escHtml(sub.scope)+')</span></div>'+
       '<div class="subj-meta">'+covered+' of '+topics.length+' topics covered &bull; Avg score: <strong style="color:'+avgColor+'">'+avgScore+'%</strong></div>'+
       '</div><div class="subj-pct" style="color:var(--'+sub.color+')">'+bl.toFixed(1)+'%</div></div>'+
       '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Blended progress toward 85% goal</div>'+
       '<div class="bar-bg" style="height:6px;margin-bottom:16px"><div class="bar-fill" style="width:'+bl.toFixed(1)+'%;background:var(--'+sub.color+');height:6px"></div></div>'+
       '<div class="ch-grid">';
     topics.forEach(t=>{
+      const label = escHtml(t.n);
       if(t.s!==null){
         const c = t.s>=80?{bg:'#22c55e18',bd:'#22c55e44',tx:'var(--green)'}
                  :t.s>=70?{bg:'#3b82f618',bd:'#3b82f644',tx:'var(--blue)'}
                  :t.s>=60?{bg:'#f59e0b18',bd:'#f59e0b44',tx:'var(--amber)'}
                  :{bg:'#ef444418',bd:'#ef444444',tx:'var(--red)'};
-        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+'"><div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div><div class="ch-name" style="color:var(--text)">'+t.n+'</div></div>';
+        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+'"><div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div><div class="ch-name" style="color:var(--text)">'+label+'</div></div>';
       } else {
-        html += '<div class="ch-box ch-box-blank"><div class="ch-name">'+t.n+'</div></div>';
+        html += '<div class="ch-box ch-box-blank"><div class="ch-name">'+label+'</div></div>';
       }
     });
     html += '</div></div>';
-    gridsContainer.innerHTML += html;
+    gridParts.push(html);
   });
+  gridsContainer.innerHTML = gridParts.join('');
 
   document.getElementById(P+'t2-ch-strengths').innerHTML = (DATA.insights.chapterStrengths||[]).map(i =>
     '<li class="li-g"><strong>'+i.topic+' ('+i.pct+'%)</strong> \u2014 '+i.note+'</li>'
