@@ -111,6 +111,24 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
 .subj-meta{font-size:13px;color:var(--muted);margin-top:2px;}
 .subj-pct{font-size:28px;font-weight:700;}
 .footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 16px;}
+/* drill-down */
+tr.result-row{cursor:pointer;}
+tr.result-row td:first-child::before{content:'▶';display:inline-block;margin-right:6px;font-size:9px;color:var(--muted);transition:transform .2s;vertical-align:middle;}
+tr.result-row.open td:first-child::before{transform:rotate(90deg);}
+tr.drill-row{display:none;}tr.drill-row.open{display:table-row;}
+tr.drill-row td{padding:0!important;border-bottom:1px solid var(--border);}
+.drill-panel{background:#12141c;padding:14px 18px;border-top:1px solid var(--border);}
+.drill-panel h4{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+.drill-table{width:100%;border-collapse:collapse;font-size:12px;}
+.drill-table th{text-align:left;padding:6px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);font-weight:600;}
+.drill-table td{padding:6px 10px;border-bottom:1px solid #1e2130;vertical-align:top;}
+.drill-table tr:last-child td{border-bottom:none;}
+.drill-table tr:hover td{background:#ffffff04;}
+.drill-q-num{font-weight:700;color:var(--muted);white-space:nowrap;}
+.drill-topics{display:flex;flex-wrap:wrap;gap:4px;}
+.drill-topic-pill{background:#1e2133;border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:#a8b0c8;line-height:1.4;}
+.drill-marks{font-weight:700;white-space:nowrap;}
+.drill-note{font-size:11px;color:var(--amber);margin-top:2px;font-style:italic;}
 @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}.subject-grid{grid-template-columns:1fr;}}
 @media(max-width:700px){.recent-row{grid-template-columns:1fr 1fr;grid-template-areas:"date level" "name name" "pct marks";gap:6px;}.recent-row .r-date{grid-area:date}.recent-row .r-level{grid-area:level;justify-self:end}.recent-row .r-name{grid-area:name}.recent-row .r-pct{grid-area:pct;text-align:left}.recent-row .r-marks{grid-area:marks;text-align:right}.recent-row .r-grade{display:none}}
 @media(max-width:600px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}.nav-btn{padding:10px 12px;font-size:12px;}}
