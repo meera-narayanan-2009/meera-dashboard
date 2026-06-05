@@ -8790,10 +8790,14 @@ function renderLevel(levelKey){
   if(allScored.length){
     const strongest = allScored.reduce((b,t)=> t.s>b.s?t:b);
     const weakest   = allScored.reduce((b,t)=> t.s<b.s?t:b);
-    document.getElementById(P+'t2-strongest-pct').textContent = strongest.s+'%';
-    document.getElementById(P+'t2-strongest-name').textContent = S[strongest.subj].shortName+' \u2014 '+strongest.n;
-    document.getElementById(P+'t2-weakest-pct').textContent = weakest.s+'%';
-    document.getElementById(P+'t2-weakest-name').textContent = S[weakest.subj].shortName+' \u2014 '+weakest.n;
+    const sPctEl = document.getElementById(P+'t2-strongest-pct');
+    const sNmEl  = document.getElementById(P+'t2-strongest-name');
+    const wPctEl = document.getElementById(P+'t2-weakest-pct');
+    const wNmEl  = document.getElementById(P+'t2-weakest-name');
+    if(sPctEl) sPctEl.textContent = strongest.s+'%';
+    if(sNmEl)  sNmEl.textContent  = S[strongest.subj].shortName+' \u2014 '+strongest.n;
+    if(wPctEl) wPctEl.textContent = weakest.s+'%';
+    if(wNmEl)  wNmEl.textContent  = S[weakest.subj].shortName+' \u2014 '+weakest.n;
   }
   const below85 = allScored.filter(t=>t.s<GOAL).length;
   document.getElementById(P+'t2-below85').textContent = below85;
