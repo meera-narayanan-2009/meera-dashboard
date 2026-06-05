@@ -8315,7 +8315,10 @@ function renderDrillPanel(a){
     const earned  = q.marks_scored!=null?q.marks_scored:(q.marks_awarded!=null?q.marks_awarded:null);
     const avail   = q.marks_available!=null?q.marks_available:null;
     const pct     = (typeof earned==='number'&&typeof avail==='number'&&avail>0)?Math.round(earned/avail*100):null;
-    const subs    = q.subtopics && q.subtopics.length ? q.subtopics : (q.chapter ? [q.chapter] : []);
+    const subs    = q.subtopics && q.subtopics.length ? q.subtopics
+                  : q.chapter ? [q.chapter]
+                  : q.topic   ? [q.topic]
+                  : [];
     const topicKey= subs.length ? subs[0] : '';
     return { q, i, qLabel, earned, avail, pct, subs, topicKey };
   });
