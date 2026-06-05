@@ -8721,14 +8721,16 @@ function renderLevel(levelKey){
   // ─── TAB 1: Assessment Overview ───
   document.getElementById(P+'t1-subtitle').innerHTML = A.length+' assessments across '+subjectKeys.length+' subjects &bull; '+DATA.meta.dateRange;
   const avgEl = document.getElementById(P+'t1-avg');
-  avgEl.textContent = overallPct+'%';
-  avgEl.style.color = pctColor(overallPct);
-  document.getElementById(P+'t1-marks').textContent = totalEarned+' / '+totalTotal+' marks';
+  if(avgEl){ avgEl.textContent = overallPct+'%'; avgEl.style.color = pctColor(overallPct); }
+  const marksEl = document.getElementById(P+'t1-marks');
+  if(marksEl) marksEl.textContent = totalEarned+' / '+totalTotal+' marks';
   document.getElementById(P+'t1-count').textContent = A.length;
   document.getElementById(P+'t1-count-detail').textContent = subjectKeys.length+' subjects over '+daySpan+' days';
   if(best){
-    document.getElementById(P+'t1-best-pct').textContent = best.percentage+'%';
-    document.getElementById(P+'t1-best-detail').innerHTML = S[best.subject].shortName+' '+best.name+' <span class="tag tag-'+gradeClass(best.grade)+'">'+best.grade+'</span>'+renderFileRefs(best);
+    const bestPctEl = document.getElementById(P+'t1-best-pct');
+    const bestDetEl = document.getElementById(P+'t1-best-detail');
+    if(bestPctEl) bestPctEl.textContent = best.percentage+'%';
+    if(bestDetEl) bestDetEl.innerHTML = S[best.subject].shortName+' '+best.name+' <span class="tag tag-'+gradeClass(best.grade)+'">'+best.grade+'</span>'+renderFileRefs(best);
   }
   const gOrder = ['A*','A','B','C','D','E','U'];
   document.getElementById(P+'t1-grades').innerHTML = gOrder.filter(g=>allGrades[g]).map(g =>
