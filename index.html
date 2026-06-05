@@ -32,7 +32,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
 .card h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:600;}
 .big-num{font-size:36px;font-weight:700;line-height:1.1;}
-.tag{display:inline-block;padding:4px 11px;border-radius:20px;font-size:14px;font-weight:700;}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
 .tag-astar{background:#a855f722;color:#a855f7;}.tag-a{background:#22c55e22;color:#22c55e;}.tag-b{background:#3b82f622;color:#3b82f6;}.tag-c{background:#f59e0b22;color:#f59e0b;}.tag-d{background:#ef444422;color:#ef4444;}.tag-e{background:#ef444422;color:#ef4444;}.tag-u{background:#6b728022;color:#9ca3af;}
 .section-title{font-size:18px;font-weight:700;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .chart-container{position:relative;height:280px;}
@@ -51,24 +51,18 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
 .hero{text-align:center;padding:32px 16px 24px;}
 .hero h1{font-size:34px;font-weight:800;margin-bottom:8px;background:linear-gradient(90deg,#3b82f6,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .hero p{color:var(--muted);font-size:15px;}
-/* Level sections + subject cards on Home */
-.level-section{max-width:1100px;margin:0 auto 28px;}
-.level-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.level-section-actions{display:flex;gap:6px;}
-.lvl-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 12px;border-radius:12px;}
-.lvl-tag.as-tag{background:#06b6d422;color:#06b6d4;}
-.lvl-tag.a-tag{background:#a855f722;color:#a855f7;}
-.subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.subj-card{background:linear-gradient(135deg,var(--card),#161922);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;border-left-width:3px;}
-.subj-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px #00000045;}
-.subj-card .sc-title{font-size:14px;font-weight:700;margin-bottom:12px;}
-.subj-card .sc-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-top:1px solid var(--border);}
-.subj-card .sc-row:first-of-type{border-top:none;}
-.subj-card .sc-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-.subj-card .sc-value{font-size:18px;font-weight:700;}
-.subj-card .sc-sub{font-size:11px;color:var(--muted);margin-left:6px;font-weight:500;}
-.subj-card-empty{opacity:.55;}
-.subj-card-empty .sc-value{color:var(--muted);font-size:13px;font-weight:500;}.sc-delta{display:inline-block;font-size:10px;font-weight:700;padding:2px 5px;border-radius:5px;margin-left:6px;vertical-align:middle;}.sc-delta.up{color:#22c55e;background:#22c55e18;}.sc-delta.dn{color:#ef4444;background:#ef444418;}.sc-delta.flat{color:#6b7280;background:#6b728018;}
+.level-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1100px;margin:0 auto 32px;}
+.level-tile{background:linear-gradient(135deg,var(--card),#161922);border:1px solid var(--border);border-radius:16px;padding:28px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;text-align:left;}
+.level-tile:hover{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 10px 30px #00000050;}
+.level-tile .lvl-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:12px;margin-bottom:12px;}
+.level-tile.as .lvl-tag{background:#06b6d422;color:#06b6d4;}
+.level-tile.a .lvl-tag{background:#a855f722;color:#a855f7;}
+.level-tile h2{font-size:28px;font-weight:800;margin-bottom:6px;}
+.level-tile .sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+.level-tile .stats{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;}
+.level-tile .stat-num{font-size:24px;font-weight:700;line-height:1.1;}
+.level-tile .stat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.level-tile .open-arrow{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;font-size:13px;}
 
 /* ═══ RECENT LIST ═══ */
 .recent-list{display:flex;flex-direction:column;gap:8px;}
@@ -92,9 +86,6 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
 .file-ref{display:flex;align-items:baseline;gap:6px;font-size:11px;line-height:1.4;margin-top:3px;}
 .file-ref .ref-label{flex:0 0 auto;color:var(--muted);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;min-width:38px;}
 .file-ref .ref-val{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:11px;color:#c9c9d4;background:#0f1117;border:1px solid var(--border);padding:1px 6px;border-radius:4px;word-break:break-all;user-select:all;cursor:text;}
-.file-ref .ref-val.ref-link{color:#7dd3fc;text-decoration:none;cursor:pointer;user-select:auto;border-color:#3b82f655;transition:border-color .15s,color .15s,background .15s;display:inline-flex;align-items:center;gap:4px;}
-.file-ref .ref-val.ref-link:hover{color:#bae6fd;border-color:#3b82f6;background:#1a1d27;}
-.file-ref .ref-arrow{font-size:10px;opacity:.7;}
 .file-refs{margin-top:6px;}
 
 /* ═══ TAB 2: PROFICIENCY ═══ */
@@ -102,7 +93,6 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
 .ch-box{border-radius:8px;padding:10px 8px;text-align:center;font-size:12px;line-height:1.3;min-height:56px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--border);transition:opacity .3s;}
 .ch-box .ch-score{font-size:18px;font-weight:700;margin-bottom:2px;}
 .ch-box .ch-name{font-size:11px;line-height:1.2;}
-.ch-box .ch-occ{font-size:9px;font-weight:600;color:var(--muted);margin-top:4px;letter-spacing:.3px;cursor:help;}
 .ch-box-blank{background:var(--card);opacity:0.35;}
 .ch-box-blank .ch-name{color:var(--muted);}
 .subj-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
@@ -111,8 +101,29 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
 .subj-meta{font-size:13px;color:var(--muted);margin-top:2px;}
 .subj-pct{font-size:28px;font-weight:700;}
 .footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 16px;}
-@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}.subject-grid{grid-template-columns:1fr;}}
-@media(max-width:700px){.recent-row{grid-template-columns:1fr auto 1fr;grid-template-areas:"date . level" "name name name" "pct grade marks";gap:6px;}.recent-row .r-date{grid-area:date}.recent-row .r-level{grid-area:level;justify-self:end}.recent-row .r-name{grid-area:name}.recent-row .r-pct{grid-area:pct;text-align:left}.recent-row .r-marks{grid-area:marks;text-align:right}.recent-row .r-grade{grid-area:grade;text-align:center;display:flex;align-items:center;justify-content:center}}
+
+/* ═══ DRILL-DOWN ═══ */
+tr.result-row{cursor:pointer;}
+tr.result-row td:first-child::before{content:'▶';display:inline-block;margin-right:6px;font-size:9px;color:var(--muted);transition:transform .2s;vertical-align:middle;}
+tr.result-row.open td:first-child::before{transform:rotate(90deg);}
+tr.drill-row{display:none;}
+tr.drill-row.open{display:table-row;}
+tr.drill-row td{padding:0 !important;border-bottom:1px solid var(--border);}
+.drill-panel{background:#12141c;padding:14px 18px;border-top:1px solid var(--border);}
+.drill-panel h4{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+.drill-table{width:100%;border-collapse:collapse;font-size:12px;}
+.drill-table th{text-align:left;padding:6px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);font-weight:600;}
+.drill-table td{padding:6px 10px;border-bottom:1px solid #1e2130;vertical-align:top;}
+.drill-table tr:last-child td{border-bottom:none;}
+.drill-table tr:hover td{background:#ffffff04;}
+.drill-q-num{font-weight:700;color:var(--muted);white-space:nowrap;}
+.drill-topics{display:flex;flex-wrap:wrap;gap:4px;}
+.drill-topic-pill{background:#1e2133;border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:#a8b0c8;line-height:1.4;}
+.drill-marks{font-weight:700;white-space:nowrap;}
+.drill-note{font-size:11px;color:var(--amber);margin-top:2px;font-style:italic;}
+.drill-no-q{color:var(--muted);font-size:13px;padding:8px 0;}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}.level-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){.recent-row{grid-template-columns:1fr 1fr;grid-template-areas:"date level" "name name" "pct marks";gap:6px;}.recent-row .r-date{grid-area:date}.recent-row .r-level{grid-area:level;justify-self:end}.recent-row .r-name{grid-area:name}.recent-row .r-pct{grid-area:pct;text-align:left}.recent-row .r-marks{grid-area:marks;text-align:right}.recent-row .r-grade{display:none}}
 @media(max-width:600px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}.nav-btn{padding:10px 12px;font-size:12px;}}
 </style>
 </head>
@@ -8073,12 +8084,6 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
     </div>
 
     <div class="section-title">All Assessment Results</div>
-    <div class="filter-bar" data-level="AS">
-      <button class="on" data-subfilter="all">All Subjects</button>
-      <button data-subfilter="psychology">Psychology</button>
-      <button data-subfilter="business">Business</button>
-      <button data-subfilter="it">IT</button>
-    </div>
     <div class="card" style="overflow-x:auto">
       <table><thead><tr><th>Date</th><th>Subject</th><th>Assessment</th><th>Type</th><th>Score</th><th>%</th><th style="min-width:100px">Progress</th><th>Grade</th></tr></thead><tbody id="AS-t1-results"></tbody></table>
     </div>
@@ -8148,12 +8153,6 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
     </div>
 
     <div class="section-title">All Assessment Results</div>
-    <div class="filter-bar" data-level="A">
-      <button class="on" data-subfilter="all">All Subjects</button>
-      <button data-subfilter="psychology">Psychology</button>
-      <button data-subfilter="business">Business</button>
-      <button data-subfilter="it">IT</button>
-    </div>
     <div class="card" style="overflow-x:auto">
       <table><thead><tr><th>Date</th><th>Subject</th><th>Assessment</th><th>Type</th><th>Score</th><th>%</th><th style="min-width:100px">Progress</th><th>Grade</th></tr></thead><tbody id="A-t1-results"></tbody></table>
     </div>
@@ -8292,17 +8291,7 @@ function renderAssessmentTable(levelKey, A, S){
   const rows = filter === 'all' ? A : A.filter(a => a.subject === filter);
   tbody.innerHTML = rows.map(a => {
     const sub = S[a.subject] || {shortName:a.subject, badgeClass:'badge-biz'};
-    const flags = (a.flags||[]).map(f=>' <span class="flag flag-'+f.type+'">'+f.text+'</span>').join('');
-    const barCol = a.percentage>=90 ? 'var(--purple)' : pctColor(a.percentage);
-    return '<tr>'+
-      '<td>'+fmtDate(a.date)+'</td>'+
-      '<td><span class="badge '+sub.badgeClass+'">'+sub.shortName+'</span></td>'+
-      '<td>'+a.name+flags+renderFileRefs(a)+'</td>'+
-      '<td>'+a.type+'</td>'+
-      '<td>'+a.earned+'/'+a.total+'</td>'+
-      '<td>'+a.percentage+'%</td>'+
-      '<td><div class="bar-bg"><div class="bar-fill" style="width:'+a.percentage+'%;background:'+barCol+'"></div></div></td>'+
-      '<td><span class="tag tag-'+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
+    return buildResultRows(a, sub, levelKey);
   }).join('');
 }
 
@@ -8533,12 +8522,12 @@ function renderHome(){
   document.getElementById('nav-meta').textContent = ALL.meta.totalCount + ' assessments • Updated ' + ALL.meta.lastUpdated;
 
   var todays = ALL.recent.filter(function(r){return daysAgo(r.dateEvaluated||r.dateAnswered||r.date)===0;});
-  var top = ALL.recent.slice(0,15);
+  var top = todays.length > 0 ? todays : ALL.recent.slice(0,8);
   var titleEl = document.getElementById('home-recent-title');
   if(titleEl){
     titleEl.textContent = todays.length > 0
-      ? 'Recently Evaluated — Latest 15 (' + todays.length + ' today)'
-      : 'Recently Evaluated — Latest 15';
+      ? 'Recently Evaluated — Today (' + todays.length + ')'
+      : 'Recently Evaluated — Latest';
   }
   renderRecentRows(document.getElementById('home-recent'), top);
   var totalUnique = ALL.meta.uniqueCount || ALL.recent.length;
@@ -8555,6 +8544,80 @@ function renderHome(){
 }
 
 function escapeAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── DRILL-DOWN ────────────────────────────────────────────────────
+function renderDrillPanel(a){
+  const qs = a.questions || [];
+  if(!qs.length){
+    const topics = (a.topicsCovered||[]);
+    const topicHtml = topics.length
+      ? '<div class="drill-topics">'+topics.map(t=>'<span class="drill-topic-pill">'+escapeHtml(t)+'</span>').join('')+'</div>'
+      : '<span style="color:var(--muted)">No topic data</span>';
+    return '<div class="drill-panel">'+
+      '<h4>Topics Covered</h4>'+topicHtml+
+      '<div class="drill-no-q" style="margin-top:10px">No per-question breakdown available for this assessment.</div>'+
+      '</div>';
+  }
+  let rows = '';
+  qs.forEach(function(q, i){
+    const qNum = q.question_number || q.question || (i+1);
+    const earned = q.marks_scored != null ? q.marks_scored : (q.marks_awarded != null ? q.marks_awarded : '—');
+    const avail  = q.marks_available != null ? q.marks_available : '—';
+    const pct    = (typeof earned === 'number' && typeof avail === 'number' && avail > 0)
+      ? Math.round(earned/avail*100) : null;
+    const pctStr = pct !== null ? ' <span style="color:'+pctColor(pct)+'">'+pct+'%</span>' : '';
+    const marksCol = '<span class="drill-marks" style="color:'+(pct!==null?pctColor(pct):'var(--muted)')+'">'+earned+'/'+avail+'</span>'+pctStr;
+    const subtopics = q.subtopics || [];
+    const topicsHtml = subtopics.length
+      ? '<div class="drill-topics">'+subtopics.map(t=>'<span class="drill-topic-pill">'+escapeHtml(t)+'</span>').join('')+'</div>'
+      : '<span style="color:var(--muted);font-size:11px">—</span>';
+    const note = q.note ? '<div class="drill-note">'+escapeHtml(q.note)+'</div>' : '';
+    const qLabel = q.question_label || ('Q'+qNum);
+    rows += '<tr>'+
+      '<td class="drill-q-num">'+escapeHtml(qLabel)+'</td>'+
+      '<td>'+topicsHtml+note+'</td>'+
+      '<td>'+marksCol+'</td>'+
+      '</tr>';
+  });
+  return '<div class="drill-panel">'+
+    '<h4>Question Breakdown ('+qs.length+' questions)</h4>'+
+    '<table class="drill-table">'+
+      '<thead><tr><th>Q</th><th>Topic / Subtopics</th><th>Marks</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody>'+
+    '</table></div>';
+}
+
+function toggleDrilldown(resultTr){
+  const drillTr = resultTr.nextElementSibling;
+  if(!drillTr || !drillTr.classList.contains('drill-row')) return;
+  const isOpen = drillTr.classList.contains('open');
+  drillTr.classList.toggle('open', !isOpen);
+  resultTr.classList.toggle('open', !isOpen);
+}
+
+// Build a pair of <tr> strings: the normal result row + its hidden drill row.
+function buildResultRows(a, sub, levelKey){
+  const flags = (a.flags||[]).map(f=>'<span class="flag flag-'+f.type+'">'+f.text+'</span>').join(' ');
+  const barCol = a.percentage>=90 ? 'var(--purple)' : pctColor(a.percentage);
+  const uid = escapeAttr((levelKey||'')+'|'+a.subject+'|'+a.name+'|'+a.date);
+  const resultRow =
+    '<tr class="result-row" onclick="toggleDrilldown(this)" data-uid="'+uid+'">'+
+    '<td>'+fmtDate(a.date)+'</td>'+
+    '<td><span class="badge '+sub.badgeClass+'">'+sub.shortName+'</span></td>'+
+    '<td>'+escapeHtml(a.name)+(flags?' '+flags:'')+renderFileRefs(a)+'</td>'+
+    '<td>'+escapeHtml(a.type)+'</td>'+
+    '<td>'+a.earned+'/'+a.total+'</td>'+
+    '<td>'+a.percentage+'%</td>'+
+    '<td><div class="bar-bg"><div class="bar-fill" style="width:'+a.percentage+'%;background:'+barCol+'"></div></div></td>'+
+    '<td><span class="tag tag-'+gradeClass(a.grade)+'">'+a.grade+'</span></td>'+
+    '</tr>';
+  const drillRow =
+    '<tr class="drill-row">'+
+    '<td colspan="8">'+renderDrillPanel(a)+'</td>'+
+    '</tr>';
+  return resultRow + drillRow;
+}
 
 
 function renderFileRefs(a){
@@ -8722,21 +8785,7 @@ function renderLevel(levelKey){
   document.getElementById(P+'t1-ao-note').textContent = DATA.aoNote || '';
 
   const tbody = document.getElementById(P+'t1-results');
-  tbody.innerHTML = '';
-  A.forEach(a=>{
-    const sub = S[a.subject];
-    const flags = (a.flags||[]).map(f=>' <span class="flag flag-'+f.type+'">'+f.text+'</span>').join('');
-    const barCol = a.percentage>=90 ? 'var(--purple)' : pctColor(a.percentage);
-    tbody.innerHTML += '<tr>'+
-      '<td>'+fmtDate(a.date)+'</td>'+
-      '<td><span class="badge '+sub.badgeClass+'">'+sub.shortName+'</span></td>'+
-      '<td>'+a.name+flags+renderFileRefs(a)+'</td>'+
-      '<td>'+a.type+'</td>'+
-      '<td>'+a.earned+'/'+a.total+'</td>'+
-      '<td>'+a.percentage+'%</td>'+
-      '<td><div class="bar-bg"><div class="bar-fill" style="width:'+a.percentage+'%;background:'+barCol+'"></div></div></td>'+
-      '<td><span class="tag tag-'+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
-  });
+  tbody.innerHTML = A.map(a => buildResultRows(a, S[a.subject], levelKey)).join('');
   document.getElementById(P+'t1-footer').textContent = 'Generated from '+A.length+' Marked.json files \u2022 Dashboard built '+DATA.meta.lastUpdated;
 
   // ─── TAB 2: Proficiency Report ───
@@ -8884,4 +8933,4 @@ function initTimeline(levelKey){
 renderHome();
 </script>
 </body>
-</html><!-- test -->
+</html>
