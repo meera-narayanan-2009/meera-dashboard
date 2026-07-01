@@ -4410,8 +4410,7 @@ function renderLevel(levelKey){
   });
   document.getElementById(P+'t1-ao-note').textContent = DATA.aoNote || '';
 
-  const tbody = document.getElementById(P+'t1-results');
-  tbody.innerHTML = A.map(a => buildResultRows(a, S[a.subject])).join('');
+  renderAssessmentTable(levelKey, A, S);
   document.getElementById(P+'t1-footer').textContent = 'Generated from '+A.length+' Marked.json files \u2022 Dashboard built '+DATA.meta.lastUpdated;
 
   // ─── TAB 2: Proficiency Report ───
