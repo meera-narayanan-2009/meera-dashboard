@@ -111,6 +111,11 @@ table{width:100%;border-collapse:collapse;font-size:13px;}th{text-align:left;pad
 .subj-meta{font-size:13px;color:var(--muted);margin-top:2px;}
 .subj-pct{font-size:28px;font-weight:700;}
 .footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 16px;}
+.topic-search-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.topic-search-bar input{flex:1;max-width:420px;padding:7px 14px;background:#1a1d27;color:var(--text);border:1px solid var(--border);border-radius:18px;font-size:13px;outline:none;}
+.topic-search-bar input:focus{border-color:var(--blue);}
+.topic-search-bar input::placeholder{color:var(--muted);}
+.topic-search-bar .ts-count{font-size:12px;color:var(--muted);}
 /* drill-down */
 tr.result-row{cursor:pointer;}
 tr.result-row td:first-child::before{content:'▶';display:inline-block;margin-right:6px;font-size:9px;color:var(--muted);transition:transform .2s;vertical-align:middle;}
