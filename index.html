@@ -12190,7 +12190,8 @@ function gotoAssessments(){
   if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}), 100);
 }
 function showTopicBreakdown(evt, topicName, breakdown, score, level){
-  _topicPopoverState = {level: level||'A', topic: topicName};
+  const normLevel = (level === 'A2') ? 'A' : (level || 'A');
+  _topicPopoverState = {level: normLevel, topic: topicName};
   evt.stopPropagation();
   const pop = document.getElementById('topic-popover');
   document.getElementById('tp-title').textContent = topicName;
