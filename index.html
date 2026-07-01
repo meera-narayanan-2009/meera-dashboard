@@ -12482,7 +12482,7 @@ function renderDrillPanel(a){
   function leafTopic(t){ const p=t.split('>'); return p[p.length-1].trim(); }
   function topicSpan(t){
     const leaf = leafTopic(t);
-    const matched = topicQuery && t.toLowerCase().includes(topicQuery);
+    const matched = topicQuery && leaf.toLowerCase().includes(topicQuery);
     return matched
       ? '<span style="color:#f5c518;font-weight:700">'+escHtml(leaf)+'</span>'
       : '<span style="color:var(--muted)">'+escHtml(leaf)+'</span>';
