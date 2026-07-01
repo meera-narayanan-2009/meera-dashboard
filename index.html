@@ -6175,80 +6175,49 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 let _drillId = 0;
 
 function renderDrillPanel(a){
-  // Pick up any active topic filter for this assessment's level
   const topicQuery = (assessTopicFilter[a.level] || '').toLowerCase().trim();
-
-  function pillHtml(text){
-    const matched = topicQuery && text.toLowerCase().includes(topicQuery);
-    const style = matched
-      ? 'background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700;'
-      : '';
-    return '<span class="drill-topic-pill" style="'+style+'">'+escHtml(text)+'</span>';
+  // Return just the leaf segment of a topic path, e.g. "1.3 Case studies" from "1 Research > 1.3 Case studies"
+  function leafTopic(t){ const p=t.split('>'); return p[p.length-1].trim(); }
+  function topicSpan(t){
+    const leaf = leafTopic(t);
+    const matched = topicQuery && t.toLowerCase().includes(topicQuery);
+    return matched
+      ? '<span style="color:var(--blue);font-weight:700">'+escHtml(leaf)+'</span>'
+      : '<span style="color:var(--muted)">'+escHtml(leaf)+'</span>';
   }
 
-  const qs=a.questions||[];
+  const qs = a.questions||[];
   if(!qs.length){
-    const topics=a.topicsCovered||[];
-    return '<div class="drill-panel"><h4>Topics Covered</h4>'+
-      (topics.length?'<div class="drill-topics">'+topics.map(t=>pillHtml(t)).join('')+'</div>':'<span style="color:var(--muted)">No topic data</span>')+
-      '<div style="color:var(--muted);font-size:12px;margin-top:10px">No per-question breakdown available.</div></div>';
+    const topics = a.topicsCovered||[];
+    if(!topics.length) return '<div class="drill-panel" style="color:var(--muted);font-size:12px">No topic data available.</div>';
+    return '<div class="drill-panel">'+
+      topics.map(function(t){
+        const matched = topicQuery && t.toLowerCase().includes(topicQuery);
+        return '<div style="font-size:12px;padding:2px 0;color:'+(matched?'var(--blue)':'var(--muted)')+(matched?';font-weight:700':'')+'">'+(matched?'● ':'○ ')+escHtml(leafTopic(t))+'</div>';
+      }).join('')+
+      '</div>';
   }
 
-  const enriched = qs.map(function(q,i){
-    const qLabel = q.question_label||(q.question_number!=null?'Q'+q.question_number:'Q'+(i+1));
-    const earned  = q.marks_scored!=null?q.marks_scored:(q.marks_awarded!=null?q.marks_awarded:null);
-    const avail   = q.marks_available!=null?q.marks_available:null;
-    const pct     = (typeof earned==='number'&&typeof avail==='number'&&avail>0)?Math.round(earned/avail*100):null;
-    const subs    = q.subtopics && q.subtopics.length ? q.subtopics
-                  : q.chapter ? [q.chapter]
-                  : q.topic   ? [q.topic]
-                  : [];
-    const topicKey= subs.length ? subs[0] : '';
-    return { q, i, qLabel, earned, avail, pct, subs, topicKey };
-  });
+  const rows = qs.map(function(q, i){
+    const qNum  = q.question_number != null ? String(q.question_number) : String(i+1);
+    const earned = q.marks_scored != null ? q.marks_scored : (q.marks_awarded != null ? q.marks_awarded : null);
+    const avail  = q.marks_available != null ? q.marks_available : null;
+    const pct    = (typeof earned==='number' && typeof avail==='number' && avail>0) ? Math.round(earned/avail*100) : null;
+    const subs   = q.subtopics && q.subtopics.length ? q.subtopics
+                 : q.chapter ? [q.chapter] : q.topic ? [q.topic] : [];
+    const marksCol = pct !== null ? pctColor(pct) : 'var(--muted)';
+    const marksStr = (earned!=null?earned:'—')+' / '+(avail!=null?avail:'—');
+    const topicsStr = subs.length ? subs.map(topicSpan).join('<span style="color:var(--border)"> · </span>') : '<span style="color:var(--muted)">—</span>';
+    return '<tr>'+
+      '<td style="white-space:nowrap;font-weight:700;font-size:12px;color:var(--text);padding:5px 10px;width:50px">'+escHtml(qNum)+'</td>'+
+      '<td style="font-size:12px;padding:5px 10px">'+topicsStr+'</td>'+
+      '<td style="white-space:nowrap;font-weight:700;font-size:12px;color:'+marksCol+';padding:5px 10px;text-align:right">'+marksStr+'</td>'+
+      '</tr>';
+  }).join('');
 
-  const panelId = 'drill-'+(_drillId++);
-
-  function buildRows(items){
-    return items.map(function(e){
-      const earnedDisp = e.earned!=null?e.earned:'—';
-      const availDisp  = e.avail!=null?e.avail:'—';
-      const marksHtml  = '<span class="drill-marks" style="color:'+(e.pct!==null?pctColor(e.pct):'var(--muted)')+'">'+earnedDisp+'/'+availDisp+'</span>'+(e.pct!==null?' <span style="color:'+pctColor(e.pct)+';font-size:11px">'+e.pct+'%</span>':'');
-      const topicsHtml = e.subs.length?'<div class="drill-topics">'+e.subs.map(t=>pillHtml(t)).join('')+'</div>':'<span style="color:var(--muted);font-size:11px">—</span>';
-      const noteHtml   = e.q.note?'<div class="drill-note">'+escHtml(e.q.note)+'</div>':'';
-      // Column order: Q | Topic | Marks
-      return '<tr><td class="drill-q-num">'+escHtml(e.qLabel)+'</td><td>'+topicsHtml+noteHtml+'</td><td style="white-space:nowrap">'+marksHtml+'</td></tr>';
-    }).join('');
-  }
-
-  window['_drillSort_'+panelId] = {col:'q', dir:1};
-  window['_drillSortFn_'+panelId] = function(col){
-    const state = window['_drillSort_'+panelId];
-    if(state.col===col) state.dir *= -1; else { state.col=col; state.dir=1; }
-    const sorted = enriched.slice().sort(function(a,b){
-      let av, bv;
-      if(col==='q')          { av=a.i; bv=b.i; }
-      else if(col==='marks') { av=a.pct!=null?a.pct:-1; bv=b.pct!=null?b.pct:-1; }
-      else                   { av=a.topicKey.toLowerCase(); bv=b.topicKey.toLowerCase(); }
-      return av<bv?-state.dir:av>bv?state.dir:0;
-    });
-    const tbody = document.getElementById(panelId+'-tbody');
-    if(tbody) tbody.innerHTML = buildRows(sorted);
-    ['q','topic','marks'].forEach(function(c){
-      const el = document.getElementById(panelId+'-th-'+c);
-      if(el) el.querySelector('.sort-arrow').textContent = state.col===c?(state.dir===1?' ↑':' ↓'):'';
-    });
-  };
-
-  const thS = 'cursor:pointer;user-select:none;white-space:nowrap;';
-  const headers =
-    '<th id="'+panelId+'-th-q"     style="'+thS+';width:40px" onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'q\')">Q<span class="sort-arrow"> ↑</span></th>'+
-    '<th id="'+panelId+'-th-topic" style="'+thS+'"             onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'topic\')">Topic<span class="sort-arrow"></span></th>'+
-    '<th id="'+panelId+'-th-marks" style="'+thS+'"             onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'marks\')">Marks<span class="sort-arrow"></span></th>';
-
-  return '<div class="drill-panel"><h4>Question Breakdown ('+qs.length+' questions)</h4>'+
-    '<table class="drill-table"><thead><tr>'+headers+'</tr></thead>'+
-    '<tbody id="'+panelId+'-tbody">'+buildRows(enriched)+'</tbody></table></div>';
+  return '<div class="drill-panel" style="padding:8px 0">'+
+    '<table style="width:100%;border-collapse:collapse">'+
+    '<tbody>'+rows+'</tbody></table></div>';
 }
 
 function toggleDrilldown(tr){
