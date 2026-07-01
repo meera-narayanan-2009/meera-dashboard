@@ -3856,9 +3856,29 @@ document.querySelectorAll('.nav-btn[data-view]').forEach(b=>{
 });
 
 // ═══════════════════════════════════════════════
-// SUBJECT FILTER — for AS/A Assessment tables
+// SUBJECT + TOPIC FILTER — for AS/A Assessment tables
 // ═══════════════════════════════════════════════
-const assessSubjFilter = {AS:'all', A:'all'};
+const assessSubjFilter  = {AS:'all', A:'all'};
+const assessTopicFilter = {AS:'', A:''};
+
+function topicMatchesFilter(a, query){
+  if(!query) return true;
+  const q = query.toLowerCase();
+  const topics = a.topicsCovered || a.topics || [];
+  if(topics.some(t => String(t).toLowerCase().includes(q))) return true;
+  return (a.questions||[]).some(qu =>
+    (qu.subtopics||[]).some(s => String(s).toLowerCase().includes(q)) ||
+    String(qu.chapter||'').toLowerCase().includes(q) ||
+    String(qu.topic||'').toLowerCase().includes(q)
+  );
+}
+
+function applyTopicFilter(levelKey){
+  const inp = document.getElementById(levelKey+'-topic-search');
+  assessTopicFilter[levelKey] = inp ? inp.value.trim() : '';
+  const DATA = ALL[levelKey];
+  if(DATA) renderAssessmentTable(levelKey, DATA.assessments, DATA.subjects);
+}
 
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -3963,8 +3983,13 @@ function buildResultRows(a,sub){
 function renderAssessmentTable(levelKey, A, S){
   const tbody = document.getElementById(levelKey+'-t1-results');
   if(!tbody) return;
-  const filter = assessSubjFilter[levelKey] || 'all';
-  const rows = filter === 'all' ? A : A.filter(a => a.subject === filter);
+  const subjFilter = assessSubjFilter[levelKey] || 'all';
+  const topicQuery = assessTopicFilter[levelKey] || '';
+  let rows = subjFilter === 'all' ? A : A.filter(a => a.subject === subjFilter);
+  const subjTotal = rows.length;
+  if(topicQuery) rows = rows.filter(a => topicMatchesFilter(a, topicQuery));
+  const countEl = document.getElementById(levelKey+'-topic-count');
+  if(countEl) countEl.textContent = topicQuery ? rows.length+' of '+subjTotal+' assessments' : '';
   tbody.innerHTML = rows.map(a => buildResultRows(a, S[a.subject]||{shortName:a.subject,badgeClass:'badge-biz'})).join('');
 }
 
