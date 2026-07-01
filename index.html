@@ -12342,8 +12342,8 @@ function renderDrillPanel(a){
     const topicsStr = subs.length ? subs.map(topicSpan).join('<span style="color:var(--border)"> · </span>') : '<span style="color:var(--muted)">—</span>';
     return '<tr>'+
       '<td style="white-space:nowrap;font-weight:700;font-size:12px;color:var(--text);padding:5px 10px;width:50px">'+escHtml(qNum)+'</td>'+
+      '<td style="white-space:nowrap;font-weight:700;font-size:12px;color:'+marksCol+';padding:5px 10px;width:70px">'+marksStr+'</td>'+
       '<td style="font-size:12px;padding:5px 10px">'+topicsStr+'</td>'+
-      '<td style="white-space:nowrap;font-weight:700;font-size:12px;color:'+marksCol+';padding:5px 10px;text-align:right">'+marksStr+'</td>'+
       '</tr>';
   }).join('');
 
