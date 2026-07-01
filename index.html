@@ -6752,6 +6752,7 @@ function renderLevel(levelKey){
         html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+';cursor:pointer" '+bkAttr+' '+nameAttr+' onclick="showTopicBreakdown(event,this.dataset.tn,JSON.parse(this.dataset.bk),'+t.s+')">'+
           '<div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div>'+
           '<div class="ch-name" style="color:var(--text)">'+label+'</div>'+
+          '<div class="ch-occ">n='+t.occ+'</div>'+
           '</div>';
       } else {
         html += '<div class="ch-box ch-box-blank"><div class="ch-name">'+label+'</div></div>';
