@@ -6069,15 +6069,21 @@ function showTopicBreakdown(evt, topicName, breakdown, score){
   resEl.textContent = totPct + '%';
   resEl.style.color = pctColor(totPct);
 
-  // Position near the clicked element, keep within viewport
+  // Position to the right of the clicked box; fall back to left if it overflows
   const rect = evt.currentTarget.getBoundingClientRect();
+  pop.style.left = '-9999px'; pop.style.top = '-9999px';
   pop.style.display = 'block';
   pop.classList.add('open');
   const pw = pop.offsetWidth, ph = pop.offsetHeight;
-  let left = rect.left + window.scrollX;
-  let top  = rect.bottom + window.scrollY + 6;
-  if(left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-  if(top  + ph > window.scrollY + window.innerHeight - 8) top = rect.top + window.scrollY - ph - 6;
+  const GAP = 8;
+  // Prefer right of box
+  let left = rect.right + GAP;
+  if(left + pw > window.innerWidth - GAP) left = rect.left - pw - GAP; // flip left
+  if(left < GAP) left = GAP;
+  // Vertically align top of popover with top of box, clamp to viewport
+  let top = rect.top;
+  if(top + ph > window.innerHeight - GAP) top = window.innerHeight - ph - GAP;
+  if(top < GAP) top = GAP;
   pop.style.left = left + 'px';
   pop.style.top  = top  + 'px';
 }
@@ -6089,6 +6095,9 @@ function closeTopicPopover(){
 document.addEventListener('click', function(e){
   const pop = document.getElementById('topic-popover');
   if(pop && pop.classList.contains('open') && !pop.contains(e.target)) closeTopicPopover();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeTopicPopover();
 });
 function gradeClass(g) { const x=(g==='A*'?'astar':g.toLowerCase()); return x; }
 function fmtDate(iso) { const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}); }
