@@ -6175,15 +6175,25 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 let _drillId = 0;
 
 function renderDrillPanel(a){
+  // Pick up any active topic filter for this assessment's level
+  const topicQuery = (assessTopicFilter[a.level] || '').toLowerCase().trim();
+
+  function pillHtml(text){
+    const matched = topicQuery && text.toLowerCase().includes(topicQuery);
+    const style = matched
+      ? 'background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700;'
+      : '';
+    return '<span class="drill-topic-pill" style="'+style+'">'+escHtml(text)+'</span>';
+  }
+
   const qs=a.questions||[];
   if(!qs.length){
     const topics=a.topicsCovered||[];
     return '<div class="drill-panel"><h4>Topics Covered</h4>'+
-      (topics.length?'<div class="drill-topics">'+topics.map(t=>'<span class="drill-topic-pill">'+escHtml(t)+'</span>').join('')+'</div>':'<span style="color:var(--muted)">No topic data</span>')+
+      (topics.length?'<div class="drill-topics">'+topics.map(t=>pillHtml(t)).join('')+'</div>':'<span style="color:var(--muted)">No topic data</span>')+
       '<div style="color:var(--muted);font-size:12px;margin-top:10px">No per-question breakdown available.</div></div>';
   }
 
-  // Enrich questions with derived sort keys
   const enriched = qs.map(function(q,i){
     const qLabel = q.question_label||(q.question_number!=null?'Q'+q.question_number:'Q'+(i+1));
     const earned  = q.marks_scored!=null?q.marks_scored:(q.marks_awarded!=null?q.marks_awarded:null);
@@ -6203,43 +6213,38 @@ function renderDrillPanel(a){
     return items.map(function(e){
       const earnedDisp = e.earned!=null?e.earned:'—';
       const availDisp  = e.avail!=null?e.avail:'—';
-      const marksHtml  = '<span class="drill-marks" style="color:'+(e.pct!==null?pctColor(e.pct):'var(--muted)')+'">'+earnedDisp+'/'+availDisp+'</span>'+(e.pct!==null?' <span style="color:'+pctColor(e.pct)+'">'+e.pct+'%</span>':'');
-      const topicsHtml = e.subs.length?'<div class="drill-topics">'+e.subs.map(t=>'<span class="drill-topic-pill">'+escHtml(t)+'</span>').join('')+'</div>':'<span style="color:var(--muted);font-size:11px">—</span>';
+      const marksHtml  = '<span class="drill-marks" style="color:'+(e.pct!==null?pctColor(e.pct):'var(--muted)')+'">'+earnedDisp+'/'+availDisp+'</span>'+(e.pct!==null?' <span style="color:'+pctColor(e.pct)+';font-size:11px">'+e.pct+'%</span>':'');
+      const topicsHtml = e.subs.length?'<div class="drill-topics">'+e.subs.map(t=>pillHtml(t)).join('')+'</div>':'<span style="color:var(--muted);font-size:11px">—</span>';
       const noteHtml   = e.q.note?'<div class="drill-note">'+escHtml(e.q.note)+'</div>':'';
-      return '<tr><td class="drill-q-num">'+escHtml(e.qLabel)+'</td><td>'+marksHtml+'</td><td>'+topicsHtml+noteHtml+'</td></tr>';
+      // Column order: Q | Topic | Marks
+      return '<tr><td class="drill-q-num">'+escHtml(e.qLabel)+'</td><td>'+topicsHtml+noteHtml+'</td><td style="white-space:nowrap">'+marksHtml+'</td></tr>';
     }).join('');
   }
 
-  // Sort state stored on panel element via closure
   window['_drillSort_'+panelId] = {col:'q', dir:1};
-
-  function sortAndRedraw(col){
+  window['_drillSortFn_'+panelId] = function(col){
     const state = window['_drillSort_'+panelId];
     if(state.col===col) state.dir *= -1; else { state.col=col; state.dir=1; }
     const sorted = enriched.slice().sort(function(a,b){
       let av, bv;
-      if(col==='q')     { av=a.i; bv=b.i; }
-      else if(col==='marks'){ av=a.pct!=null?a.pct:-1; bv=b.pct!=null?b.pct:-1; }
-      else               { av=a.topicKey.toLowerCase(); bv=b.topicKey.toLowerCase(); }
+      if(col==='q')          { av=a.i; bv=b.i; }
+      else if(col==='marks') { av=a.pct!=null?a.pct:-1; bv=b.pct!=null?b.pct:-1; }
+      else                   { av=a.topicKey.toLowerCase(); bv=b.topicKey.toLowerCase(); }
       return av<bv?-state.dir:av>bv?state.dir:0;
     });
     const tbody = document.getElementById(panelId+'-tbody');
     if(tbody) tbody.innerHTML = buildRows(sorted);
-    // Update header arrows
-    ['q','marks','topic'].forEach(function(c){
+    ['q','topic','marks'].forEach(function(c){
       const el = document.getElementById(panelId+'-th-'+c);
-      if(!el) return;
-      el.querySelector('.sort-arrow').textContent = state.col===c?(state.dir===1?' ↑':' ↓'):'';
+      if(el) el.querySelector('.sort-arrow').textContent = state.col===c?(state.dir===1?' ↑':' ↓'):'';
     });
-  }
-  // Expose to onclick
-  window['_drillSortFn_'+panelId] = sortAndRedraw;
+  };
 
-  const thStyle = 'cursor:pointer;user-select:none;white-space:nowrap;';
+  const thS = 'cursor:pointer;user-select:none;white-space:nowrap;';
   const headers =
-    '<th id="'+panelId+'-th-q" style="'+thStyle+'" onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'q\')">Q<span class="sort-arrow"> ↑</span></th>'+
-    '<th id="'+panelId+'-th-marks" style="'+thStyle+'" onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'marks\')">Marks<span class="sort-arrow"></span></th>'+
-    '<th id="'+panelId+'-th-topic" style="'+thStyle+'" onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'topic\')">Topic / Subtopics<span class="sort-arrow"></span></th>';
+    '<th id="'+panelId+'-th-q"     style="'+thS+';width:40px" onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'q\')">Q<span class="sort-arrow"> ↑</span></th>'+
+    '<th id="'+panelId+'-th-topic" style="'+thS+'"             onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'topic\')">Topic<span class="sort-arrow"></span></th>'+
+    '<th id="'+panelId+'-th-marks" style="'+thS+'"             onclick="window[\'_drillSortFn_\'+\''+panelId+'\'](\'marks\')">Marks<span class="sort-arrow"></span></th>';
 
   return '<div class="drill-panel"><h4>Question Breakdown ('+qs.length+' questions)</h4>'+
     '<table class="drill-table"><thead><tr>'+headers+'</tr></thead>'+
