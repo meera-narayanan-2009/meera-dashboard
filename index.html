@@ -3650,6 +3650,10 @@ tr.drill-row td{padding:0!important;border-bottom:1px solid var(--border);}
       <button data-subfilter="business">Business</button>
       <button data-subfilter="it">IT</button>
     </div>
+    <div class="topic-search-bar">
+      <input type="text" id="AS-topic-search" placeholder="Filter by topic…" oninput="applyTopicFilter('AS')">
+      <span class="ts-count" id="AS-topic-count"></span>
+    </div>
     <div class="card" style="overflow-x:auto">
       <table><thead><tr><th>Date</th><th>Subject</th><th>Assessment</th><th>Type</th><th>Score</th><th>%</th><th style="min-width:100px">Progress</th><th>Grade</th></tr></thead><tbody id="AS-t1-results"></tbody></table>
     </div>
@@ -3720,6 +3724,10 @@ tr.drill-row td{padding:0!important;border-bottom:1px solid var(--border);}
       <button data-subfilter="psychology">Psychology</button>
       <button data-subfilter="business">Business</button>
       <button data-subfilter="it">IT</button>
+    </div>
+    <div class="topic-search-bar">
+      <input type="text" id="A-topic-search" placeholder="Filter by topic…" oninput="applyTopicFilter('A')">
+      <span class="ts-count" id="A-topic-count"></span>
     </div>
     <div class="card" style="overflow-x:auto">
       <table><thead><tr><th>Date</th><th>Subject</th><th>Assessment</th><th>Type</th><th>Score</th><th>%</th><th style="min-width:100px">Progress</th><th>Grade</th></tr></thead><tbody id="A-t1-results"></tbody></table>
