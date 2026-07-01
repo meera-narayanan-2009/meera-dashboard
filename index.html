@@ -6034,6 +6034,62 @@ function driveFolderUrl(folderName){
 
 // ─── HELPERS ───
 function pctColor(v) { return v>=80?'var(--green)':v>=70?'var(--blue)':v>=60?'var(--amber)':'var(--red)'; }
+
+// ─── TOPIC BREAKDOWN POPOVER ───
+function showTopicBreakdown(evt, topicName, breakdown, score){
+  evt.stopPropagation();
+  const pop = document.getElementById('topic-popover');
+  document.getElementById('tp-title').textContent = topicName;
+  const n = breakdown.length;
+  document.getElementById('tp-subtitle').textContent =
+    n === 0 ? 'No assessment data yet'
+    : 'Based on ' + n + ' most recent occurrence' + (n>1?'s':'') + (n===8?' (max 8)':'');
+
+  const tbody = document.getElementById('tp-tbody');
+  let totE = 0, totT = 0;
+  tbody.innerHTML = breakdown.map(function(o){
+    const e = o.earned, t = o.total;
+    totE += e; totT += t;
+    const pct = t > 0 ? Math.round(e/t*100) : 0;
+    const col = pctColor(pct);
+    const name = o.name || '—';
+    const truncName = name.length > 32 ? name.slice(0,30)+'…' : name;
+    return '<tr>'+
+      '<td title="'+escHtml(name)+'">'+escHtml(truncName)+'</td>'+
+      '<td style="white-space:nowrap;color:var(--muted)">'+fmtDate(o.date)+'</td>'+
+      '<td class="tp-earned" style="color:'+col+'">'+e+' / '+t+'</td>'+
+      '<td style="color:'+col+';font-weight:700">'+pct+'%</td>'+
+      '</tr>';
+  }).join('');
+
+  const totPct = totT > 0 ? Math.round(totE/totT*100) : 0;
+  document.getElementById('tp-formula').textContent =
+    totE.toFixed(1)+' earned ÷ '+totT.toFixed(1)+' available';
+  const resEl = document.getElementById('tp-result');
+  resEl.textContent = totPct + '%';
+  resEl.style.color = pctColor(totPct);
+
+  // Position near the clicked element, keep within viewport
+  const rect = evt.currentTarget.getBoundingClientRect();
+  pop.style.display = 'block';
+  pop.classList.add('open');
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = rect.left + window.scrollX;
+  let top  = rect.bottom + window.scrollY + 6;
+  if(left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if(top  + ph > window.scrollY + window.innerHeight - 8) top = rect.top + window.scrollY - ph - 6;
+  pop.style.left = left + 'px';
+  pop.style.top  = top  + 'px';
+}
+function closeTopicPopover(){
+  const pop = document.getElementById('topic-popover');
+  pop.classList.remove('open');
+  pop.style.display = 'none';
+}
+document.addEventListener('click', function(e){
+  const pop = document.getElementById('topic-popover');
+  if(pop && pop.classList.contains('open') && !pop.contains(e.target)) closeTopicPopover();
+});
 function gradeClass(g) { const x=(g==='A*'?'astar':g.toLowerCase()); return x; }
 function fmtDate(iso) { const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}); }
 function gradeFromPct(p){if(p>=90)return'A*';if(p>=80)return'A';if(p>=70)return'B';if(p>=60)return'C';if(p>=50)return'D';if(p>=40)return'E';return'U';}
@@ -6686,12 +6742,17 @@ function renderLevel(levelKey){
       '<div class="ch-grid">';
     topics.forEach(t=>{
       const label = escHtml(t.n);
+      const bkAttr = 'data-bk="'+escAttr(JSON.stringify(t.breakdown||[]))+'"';
+      const nameAttr = 'data-tn="'+escAttr(t.n)+'"';
       if(t.s!==null){
         const c = t.s>=80?{bg:'#22c55e18',bd:'#22c55e44',tx:'var(--green)'}
                  :t.s>=70?{bg:'#3b82f618',bd:'#3b82f644',tx:'var(--blue)'}
                  :t.s>=60?{bg:'#f59e0b18',bd:'#f59e0b44',tx:'var(--amber)'}
                  :{bg:'#ef444418',bd:'#ef444444',tx:'var(--red)'};
-        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+'"><div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div><div class="ch-name" style="color:var(--text)">'+label+'</div></div>';
+        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+';cursor:pointer" '+bkAttr+' '+nameAttr+' onclick="showTopicBreakdown(event,this.dataset.tn,JSON.parse(this.dataset.bk),'+t.s+')">'+
+          '<div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div>'+
+          '<div class="ch-name" style="color:var(--text)">'+label+'</div>'+
+          '</div>';
       } else {
         html += '<div class="ch-box ch-box-blank"><div class="ch-name">'+label+'</div></div>';
       }
