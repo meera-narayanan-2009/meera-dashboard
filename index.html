@@ -158,6 +158,24 @@ tr.drill-row td{padding:0!important;border-bottom:1px solid var(--border);}
 </head>
 <body>
 
+<!-- Topic breakdown popover (shared, repositioned on each click) -->
+<div id="topic-popover">
+  <div class="tp-header">
+    <button class="tp-close" onclick="closeTopicPopover()">✕</button>
+    <div class="tp-title" id="tp-title"></div>
+    <div class="tp-subtitle" id="tp-subtitle"></div>
+  </div>
+  <table class="tp-table">
+    <thead><tr><th>Assessment</th><th>Date</th><th>Marks</th><th>%</th></tr></thead>
+    <tbody id="tp-tbody"></tbody>
+  </table>
+  <div class="tp-total-row">
+    <span class="tp-formula" id="tp-formula"></span>
+    <span style="flex:1"></span>
+    <span class="tp-result" id="tp-result"></span>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- DATA BLOCK                                                    -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
