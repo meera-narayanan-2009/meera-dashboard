@@ -6039,7 +6039,26 @@ function driveFolderUrl(folderName){
 function pctColor(v) { return v>=80?'var(--green)':v>=70?'var(--blue)':v>=60?'var(--amber)':'var(--red)'; }
 
 // ─── TOPIC BREAKDOWN POPOVER ───
-function showTopicBreakdown(evt, topicName, breakdown, score){
+let _topicPopoverState = {level:'A', topic:''};
+function gotoAssessments(){
+  const lvl = _topicPopoverState.level;
+  const topic = _topicPopoverState.topic;
+  closeTopicPopover();
+  // Set and apply the topic filter on the target assessment tab
+  const inp = document.getElementById(lvl+'-topic-search');
+  if(inp){ inp.value = topic; }
+  assessTopicFilter[lvl] = topic;
+  // Switch to the assessments view — renderLevel will be called by switchView if needed
+  switchView(lvl.toLowerCase()+'-assess');
+  // If already rendered, re-apply filter now
+  const DATA = ALL[lvl];
+  if(DATA) renderAssessmentTable(lvl, DATA.assessments, DATA.subjects);
+  // Scroll to the results section
+  const el = document.getElementById(lvl+'-topic-search');
+  if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}), 100);
+}
+function showTopicBreakdown(evt, topicName, breakdown, score, level){
+  _topicPopoverState = {level: level||'A', topic: topicName};
   evt.stopPropagation();
   const pop = document.getElementById('topic-popover');
   document.getElementById('tp-title').textContent = topicName;
@@ -6761,7 +6780,7 @@ function renderLevel(levelKey){
                  :t.s>=70?{bg:'#3b82f618',bd:'#3b82f644',tx:'var(--blue)'}
                  :t.s>=60?{bg:'#f59e0b18',bd:'#f59e0b44',tx:'var(--amber)'}
                  :{bg:'#ef444418',bd:'#ef444444',tx:'var(--red)'};
-        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+';cursor:pointer" '+bkAttr+' '+nameAttr+' onclick="showTopicBreakdown(event,this.dataset.tn,JSON.parse(this.dataset.bk),'+t.s+')">'+
+        html += '<div class="ch-box" style="background:'+c.bg+';border-color:'+c.bd+';cursor:pointer" '+bkAttr+' '+nameAttr+' data-lv="'+escapeAttr(t.level||'')+'" onclick="showTopicBreakdown(event,this.dataset.tn,JSON.parse(this.dataset.bk),'+t.s+',this.dataset.lv)">'+
           '<div class="ch-score" style="color:'+c.tx+'">'+t.s+'%</div>'+
           '<div class="ch-name" style="color:var(--text)">'+label+'</div>'+
           '<div class="ch-occ">n='+t.occ+'</div>'+
