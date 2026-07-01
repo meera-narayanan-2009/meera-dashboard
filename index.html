@@ -6742,8 +6742,8 @@ function renderLevel(levelKey){
       '<div class="ch-grid">';
     topics.forEach(t=>{
       const label = escHtml(t.n);
-      const bkAttr = 'data-bk="'+escAttr(JSON.stringify(t.breakdown||[]))+'"';
-      const nameAttr = 'data-tn="'+escAttr(t.n)+'"';
+      const bkAttr = 'data-bk="'+escapeAttr(JSON.stringify(t.breakdown||[]))+'"';
+      const nameAttr = 'data-tn="'+escapeAttr(t.n)+'"';
       if(t.s!==null){
         const c = t.s>=80?{bg:'#22c55e18',bd:'#22c55e44',tx:'var(--green)'}
                  :t.s>=70?{bg:'#3b82f618',bd:'#3b82f644',tx:'var(--blue)'}
