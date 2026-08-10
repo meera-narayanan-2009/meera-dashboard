@@ -14680,8 +14680,18 @@ function renderDrillPanel(a){
     const qNum  = q.question_number != null ? String(q.question_number) : String(i+1);
     const subs  = q.subtopics && q.subtopics.length ? q.subtopics
                 : q.chapter ? [q.chapter] : q.topic ? [q.topic] : [];
+    const notAttempted = q.not_attempted === true;
     const fullEarned = q.marks_scored != null ? q.marks_scored : (q.marks_awarded != null ? q.marks_awarded : null);
     const fullAvail  = q.marks_available != null ? q.marks_available : null;
+    if(notAttempted){
+      const avStr = fullAvail != null ? fullAvail : '—';
+      const topicsStr = subs.length ? subs.map(topicSpan).join('<span style="color:var(--border)"> · </span>') : '<span style="color:var(--muted)">—</span>';
+      return '<tr style="opacity:.55">'+
+        '<td style="white-space:nowrap;font-weight:700;font-size:12px;color:var(--text);padding:5px 10px;width:50px">'+escHtml(qNum)+'</td>'+
+        '<td style="white-space:nowrap;font-size:12px;color:var(--muted);padding:5px 10px;width:70px">— / '+avStr+'</td>'+
+        '<td style="font-size:12px;padding:5px 10px">'+topicsStr+'<span class="q-not-attempted" style="margin-left:8px">✗ not attempted</span></td>'+
+        '</tr>';
+    }
     // When a topic filter is active and this question has multiple subtopics,
     // show only the proportional share of marks for the matched topic.
     const matchCount = topicQuery ? subs.filter(function(s){ return s.toLowerCase().includes(topicQuery); }).length : 0;
